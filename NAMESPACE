@@ -1,0 +1,13 @@
+useDynLib(equSA,.registration = TRUE)
+import(igraph, huge,XMRF,ZIM,mvtnorm)
+importFrom("grDevices", "dev.off", "pdf")
+importFrom("stats", "cov", "cov2cor", "pnorm", "qnorm", "runif", "sd")
+importFrom("utils", "combn")
+export(equSAR,psical,pcorselR,ContTran,Cont2Gaus,ContSim,combineR,diffR,solcov,JGGM,plotGraph,plotJGraph)
+
+
+
+
+
+
+
