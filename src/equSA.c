@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <malloc.h>
 #include <R.h>
 #include <Rmath.h>
 
@@ -2150,14 +2149,12 @@ int psi_calculation(MaxNei, DataNum, DataP, M, Qmat, COV, qthreshold, row, col, 
 int M, *row, *col, MaxNei, DataNum, DataP;
 double **Qmat, **COV, qthreshold, *score, *psi;
 {
-    int stime;
-    long ltime;
-    char frname[25];
+
     int *x,*y,*indx, *indx0, **sep, *S;
-    int i,j,k,k0,k1,k2,l,m,v, dim,neisize;
-    double **A,**IA,*z,sum,mu,eta;
-    double un, q, qvalue, qscore, pscore, zscore, **SS;
-    FILE *ins, *ins2;
+    int i,j,k,k1,k2,l,m,v, dim;
+    double **A,**IA,*z,eta;
+    double un, qvalue, qscore, zscore, **SS;
+    FILE *ins;
     
     x=ivector(1,DataP);
     y=ivector(1,DataP);

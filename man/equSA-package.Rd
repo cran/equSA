@@ -2,7 +2,7 @@
 \alias{equSA-package}
 \docType{package}
 \title{
-Estimate single or multiple Graphical Model(s) and generate Networks.
+Estimate a single or multiple graphical models and generate networks.
 }
 \description{
 Provides an equivalent measure of partial correlation coefficients for high-dimensional Gaussian Graphical Models to learn and visualize the underlying relationships between variables from single or multiple datasets. The package also provides the method for constructing networks for Next Generation Sequencing Data. Besides, it includes the method for jointly estimating Gaussian Graphical Models of multiple datasets. 
@@ -11,8 +11,8 @@ Provides an equivalent measure of partial correlation coefficients for high-dime
 \tabular{rl}{
 Package: \tab equSA\cr
 Type: \tab Package\cr
-Version: \tab 1.0.0\cr
-Date: \tab 2017-02-21\cr
+Version: \tab 1.0.1\cr
+Date: \tab 2017-02-22\cr
 License: \tab GPL-2\cr
 }
 
