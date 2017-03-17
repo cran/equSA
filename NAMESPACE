@@ -1,9 +1,9 @@
 useDynLib(equSA,.registration = TRUE)
-import(igraph, huge,XMRF,ZIM,mvtnorm)
+import(igraph, huge,XMRF,ZIM,mvtnorm,speedglm)
 importFrom("grDevices", "dev.off", "pdf")
-importFrom("stats", "cov", "cov2cor", "pnorm", "qnorm", "runif", "sd")
+importFrom("stats", "cov", "cov2cor", "pnorm", "qnorm", "runif", "sd", "anova", "as.formula", "binomial", "drop1", "gaussian", "glm", "poisson", "rbinom", "rnorm")
 importFrom("utils", "combn")
-export(equSAR,psical,pcorselR,ContTran,Cont2Gaus,ContSim,combineR,diffR,solcov,JGGM,plotGraph,plotJGraph)
+export(equSAR,psical,pcorselR,ContTran,Cont2Gaus,ContSim,combineR,diffR,solcov,JGGM,plotGraph,plotJGraph,p_learning,simtoequiv,DAGsim)
 
 
 
