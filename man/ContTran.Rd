@@ -24,10 +24,21 @@ This is the function that transform the count data into continuized data.
 \author{ Bochao Jia\email{jbc409@ufl.edu}, Suwa Xu and Faming Liang}
 
 \examples{
-#library(equSA)
-#data(count)
-#ContTran(count,total_iteration=1000)
-         
+library(equSA)
+data(count)
+subset <- count[1:5,1:10]
+ContTran(subset,total_iteration=10)
+      \dontshow{
+            library(equSA)
+            data(count)
+            subset <- count[1:5,1:10]
+            ContTran(subset,total_iteration=10)
+      }
+      \donttest{
+           # library(equSA)
+           #  data(count)
+           # ContTran(count,total_iteration=1000)
+      }
 }
 
 \references{

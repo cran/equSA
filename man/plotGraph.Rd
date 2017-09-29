@@ -17,7 +17,7 @@ plotGraph(net, fn = "", th = 1e-06, mylayout = NULL)
 \value{
 Returns the layout object from \code{igraph} package - numeric matrix of two columns and the rows with the same number as the number of vertices. }
 \examples{
-#library(equSA)
-#data(SR0_mat)
-#plotGraph(as.matrix(SR0_mat))
+library(equSA)
+data(SR0_mat)
+plotGraph(as.matrix(SR0_mat))
 }

@@ -30,10 +30,21 @@ A list of two elements:
 \author{ Bochao Jia and Faming Liang\email{faliang@ufl.edu}}
 
 \examples{
-#library(equSA)
-#data(SR0)
-#equSAR(SR0)
-         
+library(equSA)
+data(SR0)
+subset <- SR0[1:100,1:10]
+equSAR(subset)
+      \dontshow{
+            library(equSA)
+            data(SR0)
+            subset <- SR0[1:100,1:10]
+            equSAR(subset)
+      }
+      \donttest{
+            #library(equSA)
+            #data(SR0)
+            #equSAR(SR0)
+      }
 }
 
 \references{

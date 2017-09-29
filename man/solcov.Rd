@@ -23,11 +23,30 @@ A list of two elements:
 }
 \author{ Bochao Jia& Runmin Shi \email{jbc409@ufl.edu}}
 
+
 \examples{
-#data(SR0)
-#data(SR0_mat)
-#solcov(SR0, SR0_mat)        
+library(equSA)
+data(SR0)
+data(SR0_mat)
+subSR0 <- SR0[1:10,1:10]
+subSR0_mat <- SR0_mat[1:10,1:10]
+solcov(subSR0, subSR0_mat) 
+      \dontshow{
+            library(equSA)
+            data(SR0)
+            data(SR0_mat)
+            subSR0 <- SR0[1:10,1:10]
+            subSR0_mat <- SR0_mat[1:10,1:10]
+            solcov(subSR0, subSR0_mat) 
+      }
+      \donttest{
+           # library(equSA)
+           # data(SR0)
+           #  data(SR0_mat)
+           # solcov(SR0, SR0_mat)
+      }
 }
+
 \references{
 Friedman, J., Hastie, T., & Tibshirani, R. (2001). The elements of statistical learning (Vol. 1). Springer, Berlin: Springer series in statistics.
 }

@@ -69,8 +69,8 @@ A list of two elements:
 \author{ Bochao Jia\email{jbc409@ufl.edu}}
 
 \examples{
-#library(equSA)
-#ContSim(100,200)
+library(equSA)
+ContSim(100,200)
 
 }
 
