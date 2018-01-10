@@ -1982,8 +1982,7 @@ double *datax, **Qmat;
                         }
                     } /* end one epoach */
                     
-                    if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",
-                                          iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
+                   // if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
                     
                 }      /* end for iterations */
                 
@@ -2178,10 +2177,10 @@ double **Qmat, **COV, qthreshold, *score, *psi;
     else {
         qscore=0.5*(fabs(Qmat[k][3])+fabs(Qmat[k+1][3]));
         // qscore=fabs(Qmat[k+1][3]);
-        Rprintf("q-score=%g\n", qscore);
+       // Rprintf("q-score=%g\n", qscore);
     }
     
-    Rprintf("Thresholding is done\n");
+    //Rprintf("Thresholding is done\n");
     
     /*** determine significant neighbors  ****/
     for(i=1; i<=DataP; i++)
@@ -2269,7 +2268,7 @@ double **Qmat, **COV, qthreshold, *score, *psi;
             v++;
             psi[v]=zscore;
         }
-        if(i%100==0) Rprintf("psi-score i=%d\n", i);
+       // if(i%100==0) Rprintf("psi-score i=%d\n", i);
     }
     
     fclose(ins);
@@ -2336,8 +2335,8 @@ double *datax, **Qmat;
     dif=dvector(1,GRID);
     
     
-    if(datanum>MAX_NUM) Rprintf("Data size is TOO LARGE in pcorsel.c\n");
-        else Rprintf("working subdata size=%d\n", datanum);
+   // if(datanum>MAX_NUM) Rprintf("Data size is TOO LARGE in pcorsel.c\n");
+   //     else Rprintf("working subdata size=%d\n", datanum);
             
             indexx(datanum,datax,indx);
             
@@ -2420,8 +2419,7 @@ double *datax, **Qmat;
                         }
                     } /* end one epoach */
                     
-                    if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",
-                                          iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
+                   // if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
                     
                 }      /* end for iterations */
                 
@@ -2663,7 +2661,7 @@ void equSA_sub(double DataX[],
             m++;
             row[m]=i; col[m]=j; datax[m]=COV[i][j];
         }
-        if(i%100==0) Rprintf("i=%d\n", i);
+        //if(i%100==0) Rprintf("i=%d\n", i);
     }
     if(m!=DATA_NUM_PLUS){ Rprintf("Matrix error I in corz.c\n"); }
     
@@ -2860,7 +2858,7 @@ void equSA1(double DataX[],
             m++;
             row[m]=i; col[m]=j; datax[m]=COV[i][j];
         }
-        if(i%100==0) Rprintf("i=%d\n", i);
+       // if(i%100==0) Rprintf("i=%d\n", i);
     }
     if(m!=DATA_NUM_PLUS){ Rprintf("Matrix error I in corz.c\n"); }
     
@@ -2983,7 +2981,7 @@ void equSA1(double DataX[],
     else {
         qscore=0.5*(fabs(Qmat[k][3])+fabs(Qmat[k+1][3]));
         // qscore=fabs(Qmat[k+1][3]);
-        Rprintf("threshold psi-score=%g\n", qscore);
+      //  Rprintf("threshold psi-score=%g\n", qscore);
     }
     
     for(i=1; i<=*iDataP; i++)
@@ -3226,7 +3224,7 @@ void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM )
     if(*DATA_NUM > MAX_NUM){ Rprintf("The dataset is too big\n"); }
     
     
-    Rprintf("working subdata size=%d\n", *DATA_NUM);
+  //  Rprintf("working subdata size=%d\n", *DATA_NUM);
     
     // col is col2, row is col1, datax is col3.
     
@@ -3319,8 +3317,7 @@ void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM )
                 }
             } /* end one epoach */
             
-            if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",
-                                 iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
+           // if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
             
         }      /* end for iterations */
         

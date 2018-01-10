@@ -34,17 +34,6 @@ library(equSA)
 data(SR0)
 subset <- SR0[1:100,1:10]
 equSAR(subset)
-      \dontshow{
-            library(equSA)
-            data(SR0)
-            subset <- SR0[1:100,1:10]
-            equSAR(subset)
-      }
-      \donttest{
-            #library(equSA)
-            #data(SR0)
-            #equSAR(SR0)
-      }
 }
 
 \references{

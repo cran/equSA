@@ -17,8 +17,8 @@ In the second part, the package implements the p-learning algorithm which is use
 \tabular{rl}{
 Package: \tab equSA\cr
 Type: \tab Package\cr
-Version: \tab 1.1.1\cr
-Date: \tab 2017-03-17\cr
+Version: \tab 1.1.4\cr
+Date: \tab 22018-01-09\cr
 License: \tab GPL-2\cr
 }
 
@@ -70,7 +70,7 @@ Liu, H., Lafferty, J. and Wasserman, L. (2009). The Nonparanormal: Semiparametri
  
 
 
-Jia, B., Xu, S., Xiao, G., Lamba, V., Liang, F. (2017) Inference of Genetic Networks from Next Generation Sequencing Data. Biometrics, in press.
+Jia, B., Xu, S., Xiao, G., Lamba, V., Liang, F. (2017) Inference of Genetic Networks from Next Generation Sequencing Data. Biometrics.
 
 Jia, B. and Liang, F. (2017) Joint Estimation of Multiple Gaussian Graphical Models via Multiple Hypothesis Tests (preparing)
 
@@ -78,7 +78,7 @@ Jia, B. and Liang, F. (2017) Joint Estimation of Multiple Gaussian Graphical Mod
 Jean-Philippe, Pellet and Andr{\'e},Elisseeff (2008). Using Markov blankets for causal structure learning. Journal of Machine Learning Research, 9, 1295-1342. 
 
 Suwa, Xu and Faming, Liang (2017). Learning High-Dimensional Bayesian Networks for General Types of
-Random Variables. Submitted to Biometrika. 
+Random Variables. Submitted to Journal of Machine Learning. 
 
 Kalisch, Markus and B{\"u}hlmann, Peter (2007). Estimating high-dimensional directed acyclic graphs with the PC-algorithm. Journal of Machine Learning Research, 8, 613-636.
 
