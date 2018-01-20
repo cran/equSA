@@ -9,7 +9,7 @@
 /* over definition */
 
 /*** parameter settings for corsel.c and pcorsel.c ***/
-static int  MAX_NUM=2000000, GRID=2, mingrid=2;
+static int  MAX_NUM=2000000;
 static int  WARM=1, stepscale=10000, samsize=10000;
 static double rho=0.01;
 
@@ -1855,8 +1855,8 @@ int n;
 }
 
 
-int corsel(datanum,row,col,datax, Qmat)
-int datanum,*row, *col;
+int corsel(datanum,row,col,datax, Qmat,GRID,mingrid,iteration)
+int datanum,*row, *col,GRID,mingrid,iteration;
 double *datax, **Qmat;
 {
     int  grid, bestgrid, rep;
@@ -1904,39 +1904,64 @@ double *datax, **Qmat;
             indexx(datanum,datax,indx);
             
             grid=GRID+1;  bestentropy=1.0e+100;
+            double init_prob;
+            if (GRID>=3) init_prob = 0.45;
+            else init_prob = 0.99;
             while(grid>mingrid){
-                
-                grid--;
-                
-                /* Initialization */
-                mu[1]=0.0; alpha[1]=0.0; k=0;
-                for(i=1; i<=(int)(datanum*0.99); i++){
-                    mu[1]+=datax[indx[i]];
-                    alpha[1]+=datax[indx[i]]*datax[indx[i]];
-                    k++;
-                }
-                mu[1]=mu[1]/k;
-                alpha[1]=sqrt(alpha[1]/k-mu[1]*mu[1])*sqrt(2.0);
-                beta[1]=2.0; prob[1]=0.99;
-                
+              
+              grid--;
+              
+              /* Initialization */
+              
+              mu[1]=0.0; alpha[1]=0.0; k=0;
+              for(i=1; i<=(int)(datanum*init_prob); i++){
+                mu[1]+=datax[indx[i]];
+                alpha[1]+=datax[indx[i]]*datax[indx[i]];
+                k++;
+              }
+              mu[1]=mu[1]/k;
+              alpha[1]=sqrt(alpha[1]/k-mu[1]*mu[1])*sqrt(2.0);
+              beta[1]=2.0; prob[1]=init_prob;
+              
+              if(GRID==3){
+                double summ[3];
+                summ[0]=prob[1];
+                summ[1]=0.95;
+                summ[2]=1;
+                prob[2] = 0.95-prob[1];
+                prob[3] = 0.05;
                 for(j=2; j<=grid; j++){
-                    tep=(1-prob[1])/(grid-1);
-                    mu[j]=0.0; alpha[j]=0.0; k=0;
-                    for(i=(int)(datanum*(prob[1]+(j-2)*tep)); i<=(int)(datanum*(prob[1]+(j-1)*tep)); i++){
-                        mu[j]+=datax[indx[i]];
-                        alpha[j]+=datax[indx[i]]*datax[indx[i]];
-                        k++;
-                    }
-                    mu[j]=mu[j]/k;
-                    alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
-                    beta[j]=2.0; prob[j]=tep;
+                  mu[j]=0.0; alpha[j]=0.0; k=0;
+                  for(i=(int)(datanum*(summ[j-2])); i<=(int)(datanum*(summ[j-1])); i++){
+                    mu[j]+=datax[indx[i]];
+                    alpha[j]+=datax[indx[i]]*datax[indx[i]];
+                    k++;
+                  }
+                  mu[j]=mu[j]/k;
+                  alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
+                  beta[j]=2.0;
                 }
-                for(j=1; j<=grid; j++){
-                    logprob[j]=log(prob[j])-log(prob[grid]);
+              }else{
+                for(j=2; j<=grid; j++){
+                  tep=(1-prob[1])/(grid-1);
+                  mu[j]=0.0; alpha[j]=0.0; k=0;
+                  for(i=(int)(datanum*(prob[1]+(j-2)*tep)); i<=(int)(datanum*(prob[1]+(j-1)*tep)); i++){
+                    mu[j]+=datax[indx[i]];
+                    alpha[j]+=datax[indx[i]]*datax[indx[i]];
+                    k++;
+                  }
+                  mu[j]=mu[j]/k;
+                  alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
+                  beta[j]=2.0; prob[j]=tep;
                 }
+              }
+              
+              for(j=1; j<=grid; j++){
+                logprob[j]=log(prob[j])-log(prob[grid]);
+              }
                 
                 
-                for(iter=1; iter<=100; iter++){
+                for(iter=1; iter<=iteration; iter++){
                     
                     random_order(sam,datanum);
                     for(i=1; i<=datanum; i++){
@@ -2050,8 +2075,8 @@ double *datax, **Qmat;
     
     
     
-    // com=bestgrid-1;
-    com=1;
+    if(GRID==2 && mingrid==2) com=1;
+    else com=bestgrid-1;
     
     /* calculating FDR */
     for(i=1; i<=datanum; i++){
@@ -2288,8 +2313,8 @@ loop:free_ivector(x,1,DataP);
     return 0;
 }
 
-int pcorsel(datanum,row,col,datax, Qmat)
-int datanum,*row, *col;
+int pcorsel(datanum,row,col,datax, Qmat,GRID,mingrid,iteration)
+int datanum,*row, *col,GRID,mingrid,iteration;
 double *datax, **Qmat;
 {
     int  grid, bestgrid, rep;
@@ -2341,39 +2366,64 @@ double *datax, **Qmat;
             indexx(datanum,datax,indx);
             
             grid=GRID+1;  bestentropy=1.0e+100;
+            double init_prob;
+            if (GRID>=3) init_prob = 0.45;
+            else init_prob = 0.99;
             while(grid>mingrid){
-                
-                grid--;
-                
-                /* Initialization */
-                mu[1]=0.0; alpha[1]=0.0; k=0;
-                for(i=1; i<=(int)(datanum*0.99); i++){
-                    mu[1]+=datax[indx[i]];
-                    alpha[1]+=datax[indx[i]]*datax[indx[i]];
-                    k++;
-                }
-                mu[1]=mu[1]/k;
-                alpha[1]=sqrt(alpha[1]/k-mu[1]*mu[1])*sqrt(2.0);
-                beta[1]=2.0; prob[1]=0.99;
-                
+              
+              grid--;
+              
+              /* Initialization */
+              
+              mu[1]=0.0; alpha[1]=0.0; k=0;
+              for(i=1; i<=(int)(datanum*init_prob); i++){
+                mu[1]+=datax[indx[i]];
+                alpha[1]+=datax[indx[i]]*datax[indx[i]];
+                k++;
+              }
+              mu[1]=mu[1]/k;
+              alpha[1]=sqrt(alpha[1]/k-mu[1]*mu[1])*sqrt(2.0);
+              beta[1]=2.0; prob[1]=init_prob;
+              
+              if(GRID==3){
+                double summ[3];
+                summ[0]=prob[1];
+                summ[1]=0.95;
+                summ[2]=1;
+                prob[2] = 0.95-prob[1];
+                prob[3] = 0.05;
                 for(j=2; j<=grid; j++){
-                    tep=(1-prob[1])/(grid-1);
-                    mu[j]=0.0; alpha[j]=0.0; k=0;
-                    for(i=(int)(datanum*(prob[1]+(j-2)*tep)); i<=(int)(datanum*(prob[1]+(j-1)*tep)); i++){
-                        mu[j]+=datax[indx[i]];
-                        alpha[j]+=datax[indx[i]]*datax[indx[i]];
-                        k++;
-                    }
-                    mu[j]=mu[j]/k;
-                    alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
-                    beta[j]=2.0; prob[j]=tep;
+                  mu[j]=0.0; alpha[j]=0.0; k=0;
+                  for(i=(int)(datanum*(summ[j-2])); i<=(int)(datanum*(summ[j-1])); i++){
+                    mu[j]+=datax[indx[i]];
+                    alpha[j]+=datax[indx[i]]*datax[indx[i]];
+                    k++;
+                  }
+                  mu[j]=mu[j]/k;
+                  alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
+                  beta[j]=2.0;
                 }
-                for(j=1; j<=grid; j++){
-                    logprob[j]=log(prob[j])-log(prob[grid]);
+              }else{
+                for(j=2; j<=grid; j++){
+                  tep=(1-prob[1])/(grid-1);
+                  mu[j]=0.0; alpha[j]=0.0; k=0;
+                  for(i=(int)(datanum*(prob[1]+(j-2)*tep)); i<=(int)(datanum*(prob[1]+(j-1)*tep)); i++){
+                    mu[j]+=datax[indx[i]];
+                    alpha[j]+=datax[indx[i]]*datax[indx[i]];
+                    k++;
+                  }
+                  mu[j]=mu[j]/k;
+                  alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
+                  beta[j]=2.0; prob[j]=tep;
                 }
+              }
+              
+              for(j=1; j<=grid; j++){
+                logprob[j]=log(prob[j])-log(prob[grid]);
+              }
                 
                 
-                for(iter=1; iter<=100; iter++){
+                for(iter=1; iter<=iteration; iter++){
                     
                     random_order(sam,datanum);
                     for(i=1; i<=datanum; i++){
@@ -2487,8 +2537,8 @@ double *datax, **Qmat;
     
     
     
-    // com=bestgrid-1;
-    com=1;
+    if(GRID==2 && mingrid==2) com=1;
+    else com=bestgrid-1;
     
     /* calculating FDR */
     for(i=1; i<=datanum; i++){
@@ -2588,7 +2638,10 @@ void equSA_sub(double DataX[],
             int *iMaxNei,
             int *iDataNum,
             int *iDataP,
-            double *ALPHA1)
+            double *ALPHA1,
+            int *GRID,
+            int *mingrid,
+            int *iteration)
 {
 #define pi 3.14159265
     int  DATA_NUM, DATA_NUM_PLUS, *no, *row, *col, *subrow, *subcol,*indx, **E;
@@ -2730,7 +2783,7 @@ void equSA_sub(double DataX[],
     
 
     
-    corsel(M,subrow,subcol,subscore,Qmat);
+    corsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
     
     /*** psi-score calculation *****/
     
@@ -2787,7 +2840,10 @@ void equSA1(double DataX[],
            int *iDataNum,
            int *iDataP,
            double *ALPHA1,
-           double *ALPHA2)
+           double *ALPHA2,
+           int *GRID, 
+           int *mingrid,
+           int *iteration)
 {
    #define pi 3.14159265
     FILE *ins;
@@ -2922,7 +2978,7 @@ void equSA1(double DataX[],
         for(i=1; i<=M; i++){ subrow[i]=row[i]; subcol[i]=col[i]; subscore[i]=score[i]; }
     }
     
-    corsel(M,subrow,subcol,subscore,Qmat);
+    corsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
     
     /*** psi-score calculation *****/
     
@@ -2968,7 +3024,7 @@ void equSA1(double DataX[],
     }
     
     
-    pcorsel(M,subrow,subcol,subscore,Qmat);
+    pcorsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
     
     k=M; q=Qmat[k][4];
     while(q<*ALPHA2 && k>1){
@@ -3172,317 +3228,344 @@ void allR(int DataX[],
 
 
 
-void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM )
+void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM, int *GRID, int *mingrid, int *iteration)
 {
 #define pi 3.14159265
-    static int  MAX_NUM=200000, GRID=2, mingrid=2;
-    static int  WARM=1, stepscale=10000, samsize=10000;
-    static double rho=0.01;
-    
-    //#define len(array,len){len=(sizeof(array)/sizeof(array[0]));}
-    
-    
-    
-    FILE *ins;
-    int  grid, bestgrid, rep;
-    int *indx, *indx2,  *sam, *row, *col, i, j, k, k1, k2, m, com, iter, ok;
-    double **resam,*rez,*dis,*dif,*mu,*alpha,*beta,*prob,*logprob,*wei,*datax,*FDR,*Q;
-    double entropy;
-    double delta,z,un,max,min,sum,tep,tep1,tep2,eta,dmu,dalpha,dbeta;
-    double bestentropy, *bestprob, *bestmu, *bestalpha, *bestbeta;
-    
-
-    
-
-    
-    
-    datax=dvector(1,MAX_NUM);
-    row=ivector(1,MAX_NUM);
-    col=ivector(1,MAX_NUM);
-    mu=dvector(1,GRID);
-    alpha=dvector(1,GRID);
-    beta=dvector(1,GRID);
-    prob=dvector(1,GRID);
-    wei=dvector(1,GRID);
-    sam=ivector(1,MAX_NUM);
-    indx=ivector(1,MAX_NUM);
-    indx2=ivector(1,GRID);
-    FDR=dvector(1,MAX_NUM);
-    Q=dvector(1,MAX_NUM);
-    bestmu=dvector(1,GRID);
-    bestalpha=dvector(1,GRID);
-    bestbeta=dvector(1,GRID);
-    bestprob=dvector(1,GRID);
-    logprob=dvector(1,GRID);
-    resam=dmatrix(1,GRID,1,samsize);
-    rez=dvector(1,samsize);
-    dis=dvector(1,GRID);
-    dif=dvector(1,GRID);
-    
-    
-    
-    if(*DATA_NUM > MAX_NUM){ Rprintf("The dataset is too big\n"); }
-    
-    
+  static int  MAX_NUM=200000;
+  static int  WARM=1, stepscale=10000, samsize=10000;
+  static double rho=0.01;
+  
+  //#define len(array,len){len=(sizeof(array)/sizeof(array[0]));}
+  
+  
+  
+  FILE *ins;
+  int  grid, bestgrid, rep;
+  int *indx, *indx2,  *sam, *row, *col, i, j, k, k1, k2, m, com, iter, ok;
+  double **resam,*rez,*dis,*dif,*mu,*alpha,*beta,*prob,*logprob,*wei,*datax,*FDR,*Q;
+  double entropy;
+  double delta,z,un,max,min,sum,tep,tep1,tep2,eta,dmu,dalpha,dbeta;
+  double bestentropy, *bestprob, *bestmu, *bestalpha, *bestbeta;
+  
+  
+  
+  
+  
+  
+  datax=dvector(1,MAX_NUM);
+  row=ivector(1,MAX_NUM);
+  col=ivector(1,MAX_NUM);
+  mu=dvector(1,(*GRID));
+  alpha=dvector(1,(*GRID));
+  beta=dvector(1,(*GRID));
+  prob=dvector(1,(*GRID));
+  wei=dvector(1,(*GRID));
+  sam=ivector(1,MAX_NUM);
+  indx=ivector(1,MAX_NUM);
+  indx2=ivector(1,(*GRID));
+  FDR=dvector(1,MAX_NUM);
+  Q=dvector(1,MAX_NUM);
+  bestmu=dvector(1,(*GRID));
+  bestalpha=dvector(1,(*GRID));
+  bestbeta=dvector(1,(*GRID));
+  bestprob=dvector(1,(*GRID));
+  logprob=dvector(1,(*GRID));
+  resam=dmatrix(1,(*GRID),1,samsize);
+  rez=dvector(1,samsize);
+  dis=dvector(1,(*GRID));
+  dif=dvector(1,(*GRID));
+  
+  
+  
+  if(*DATA_NUM > MAX_NUM){ Rprintf("The dataset is too big\n"); }
+  
+  
   //  Rprintf("working subdata size=%d\n", *DATA_NUM);
+  
+  // col is col2, row is col1, datax is col3.
+  
+  for( i=0; i<*DATA_NUM; i++)
+  {
+    row[i+1]=irow[i];
+    col[i+1]=icol[i];
+    datax[i+1]=idatax[i];
     
-    // col is col2, row is col1, datax is col3.
+  }
+  
+  indexx(*DATA_NUM,datax,indx);
+  
+  grid=(*GRID)+1;  bestentropy=1.0e+100;
+  double init_prob;
+  if ((*GRID)>=3) init_prob = 0.45;
+  else init_prob = 0.99;
+  while(grid>(*mingrid)){
     
-    for( i=0; i<*DATA_NUM; i++)
-    {
-        row[i+1]=irow[i];
-        col[i+1]=icol[i];
-        datax[i+1]=idatax[i];
-        
+    grid--;
+    
+    /* Initialization */
+    
+    mu[1]=0.0; alpha[1]=0.0; k=0;
+    for(i=1; i<=(int)((*DATA_NUM)*init_prob); i++){
+      mu[1]+=datax[indx[i]];
+      alpha[1]+=datax[indx[i]]*datax[indx[i]];
+      k++;
+    }
+    mu[1]=mu[1]/k;
+    alpha[1]=sqrt(alpha[1]/k-mu[1]*mu[1])*sqrt(2.0);
+    beta[1]=2.0; prob[1]=init_prob;
+    
+    if((*GRID)==3){
+      double summ[3];
+      summ[0]=prob[1];
+      summ[1]=0.95;
+      summ[2]=1;
+      prob[2] = 0.95-prob[1];
+      prob[3] = 0.05;
+      for(j=2; j<=grid; j++){
+        mu[j]=0.0; alpha[j]=0.0; k=0;
+        for(i=(int)((*DATA_NUM)*(summ[j-2])); i<=(int)((*DATA_NUM)*(summ[j-1])); i++){
+          mu[j]+=datax[indx[i]];
+          alpha[j]+=datax[indx[i]]*datax[indx[i]];
+          k++;
+        }
+        mu[j]=mu[j]/k;
+        alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
+        beta[j]=2.0;
+      }
+    }else{
+      for(j=2; j<=grid; j++){
+        tep=(1-prob[1])/(grid-1);
+        mu[j]=0.0; alpha[j]=0.0; k=0;
+        for(i=(int)((*DATA_NUM)*(prob[1]+(j-2)*tep)); i<=(int)((*DATA_NUM)*(prob[1]+(j-1)*tep)); i++){
+          mu[j]+=datax[indx[i]];
+          alpha[j]+=datax[indx[i]]*datax[indx[i]];
+          k++;
+        }
+        mu[j]=mu[j]/k;
+        alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
+        beta[j]=2.0; prob[j]=tep;
+      }
     }
     
-    indexx(*DATA_NUM,datax,indx);
     
-    grid=GRID+1;  bestentropy=1.0e+100;
-    while(grid>mingrid){
+    
+    
+    for(j=1; j<=grid; j++){
+      logprob[j]=log(prob[j])-log(prob[grid]);
+    }
+    
+    for(iter=1; iter<=(*iteration); iter++){
+      
+      random_order(sam,*DATA_NUM);
+      for(i=1; i<=*DATA_NUM; i++){
         
-        grid--;
-        
-        /* Initialization */
-        mu[1]=0.0; alpha[1]=0.0; k=0;
-        for(i=1; i<=(int)(*DATA_NUM*0.99); i++){
-            mu[1]+=datax[indx[i]];
-            alpha[1]+=datax[indx[i]]*datax[indx[i]];
-            k++;
-        }
-        mu[1]=mu[1]/k;
-        alpha[1]=sqrt(alpha[1]/k-mu[1]*mu[1])*sqrt(2.0);
-        beta[1]=2.0; prob[1]=0.99;
-        
-        for(j=2; j<=grid; j++){
-            tep=(1-prob[1])/(grid-1);
-            mu[j]=0.0; alpha[j]=0.0; k=0;
-            for(i=(int)(*DATA_NUM*(prob[1]+(j-2)*tep)); i<=(int)(*DATA_NUM*(prob[1]+(j-1)*tep)); i++){
-                mu[j]+=datax[indx[i]];
-                alpha[j]+=datax[indx[i]]*datax[indx[i]];
-                k++;
-            }
-            mu[j]=mu[j]/k;
-            alpha[j]=sqrt(alpha[j]/k-mu[j]*mu[j])*sqrt(2.0);
-            beta[j]=2.0; prob[j]=tep;
-        }
-        for(j=1; j<=grid; j++){
-            logprob[j]=log(prob[j])-log(prob[grid]);
-        }
-        
-        
-        for(iter=1; iter<=100; iter++){
-            
-            random_order(sam,*DATA_NUM);
-            for(i=1; i<=*DATA_NUM; i++){
-                
-                rep=*DATA_NUM*(iter-1)+i;
-                if(rep<=WARM*stepscale) delta=rho;
-                else delta=rho*exp(-log(1.0*(rep-(WARM-1)*stepscale)/stepscale));
-                
-                for(sum=0.0,j=1; j<=grid; j++) sum+=exp(logprob[j]);
-                for(j=1; j<=grid; j++) prob[j]=exp(logprob[j])/sum;
-                
-                z=datax[sam[i]];
-                max=-1.0e+100;
-                for(j=1; j<=grid; j++){
-                    wei[j]=dlogGnormal(z,mu[j],alpha[j],beta[j])+log(prob[j]);
-                    if(wei[j]>max){ max=wei[j];}
-                }
-                for(sum=0.0, j=1; j<=grid; j++) sum+=exp(wei[j]-max);
-                
-                indexx(grid,mu,indx2);
-                for(k=1; k<=grid; k++){
-                    j=indx2[k];
-                    eta=exp(wei[j]-max)/sum;
-                    
-                    if(z>mu[j]) dmu=beta[j]/alpha[j]*exp((beta[j]-1.0)*log(fabs(z-mu[j])/alpha[j]));
-                    else dmu=-beta[j]/alpha[j]*exp((beta[j]-1.0)*log(fabs(z-mu[j])/alpha[j]));
-                    
-                    dalpha=-1.0/alpha[j]+beta[j]/alpha[j]*exp(beta[j]*log(fabs(z-mu[j])/alpha[j]));
-                    dbeta=1.0/beta[j]+1.0/beta[j]/beta[j]*derivative_gamma(1.0/beta[j])
-                    -exp(beta[j]*log(fabs(z-mu[j])/alpha[j]))*log(fabs(z-mu[j])/alpha[j]);
-                    
-                    mu[j]+=delta*eta*dmu;
-                    alpha[j]+=delta*eta*dalpha;
-                    beta[j]+=delta*eta*dbeta;
-                    logprob[j]+=delta*(eta-prob[j]);
-                    
-                    if(mu[j]<-20.0) mu[j]=-20.0;
-                    if(mu[j]>40.0) mu[j]=40.0;
-                    if(alpha[j]<0.1) alpha[j]=0.1;
-                    if(alpha[j]>10.0) alpha[j]=10.0;
-                    if(beta[j]<0.1) beta[j]=0.1;
-                    if(beta[j]>10.0) beta[j]=10.0;
-                }
-            } /* end one epoach */
-            
-           // if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
-            
-        }      /* end for iterations */
-        
+        rep=*DATA_NUM*(iter-1)+i;
+        if(rep<=WARM*stepscale) delta=rho;
+        else delta=rho*exp(-log(1.0*(rep-(WARM-1)*stepscale)/stepscale));
         
         for(sum=0.0,j=1; j<=grid; j++) sum+=exp(logprob[j]);
         for(j=1; j<=grid; j++) prob[j]=exp(logprob[j])/sum;
         
-        for(entropy=0.0,i=1; i<=*DATA_NUM; i++){
-            max=-1.0e+100;
-            for(j=1; j<=grid; j++){
-                wei[j]=dlogGnormal(z,mu[j],alpha[j],beta[j])+log(prob[j]);
-                if(wei[j]>max){ max=wei[j]; }
-            }
-            for(sum=0.0, j=1; j<=grid; j++) sum+=exp(wei[j]-max);
-            entropy+=log(sum)+max;
+        z=datax[sam[i]];
+        max=-1.0e+100;
+        for(j=1; j<=grid; j++){
+          wei[j]=dlogGnormal(z,mu[j],alpha[j],beta[j])+log(prob[j]);
+          if(wei[j]>max){ max=wei[j];}
         }
-        entropy*=-1.0/(*DATA_NUM);
-        entropy+=0.5*(grid*3+grid-1)*log(1.0**DATA_NUM)/(*DATA_NUM);
+        for(sum=0.0, j=1; j<=grid; j++) sum+=exp(wei[j]-max);
         
-        
-        
-        if(entropy<=bestentropy){
-            bestentropy=entropy;
-            bestgrid=grid;
-            for(j=1; j<=grid; j++){ bestprob[j]=prob[j]; bestmu[j]=mu[j];
-                bestalpha[j]=alpha[j]; bestbeta[j]=beta[j]; }
+        indexx(grid,mu,indx2);
+        for(k=1; k<=grid; k++){
+          j=indx2[k];
+          eta=exp(wei[j]-max)/sum;
+          
+          if(z>mu[j]) dmu=beta[j]/alpha[j]*exp((beta[j]-1.0)*log(fabs(z-mu[j])/alpha[j]));
+          else dmu=-beta[j]/alpha[j]*exp((beta[j]-1.0)*log(fabs(z-mu[j])/alpha[j]));
+          
+          dalpha=-1.0/alpha[j]+beta[j]/alpha[j]*exp(beta[j]*log(fabs(z-mu[j])/alpha[j]));
+          dbeta=1.0/beta[j]+1.0/beta[j]/beta[j]*derivative_gamma(1.0/beta[j])
+            -exp(beta[j]*log(fabs(z-mu[j])/alpha[j]))*log(fabs(z-mu[j])/alpha[j]);
+          
+          mu[j]+=delta*eta*dmu;
+          alpha[j]+=delta*eta*dalpha;
+          beta[j]+=delta*eta*dbeta;
+          logprob[j]+=delta*(eta-prob[j]);
+          
+          if(mu[j]<-20.0) mu[j]=-20.0;
+          if(mu[j]>40.0) mu[j]=40.0;
+          if(alpha[j]<0.1) alpha[j]=0.1;
+          if(alpha[j]>10.0) alpha[j]=10.0;
+          if(beta[j]<0.1) beta[j]=0.1;
+          if(beta[j]>10.0) beta[j]=10.0;
         }
-    }  /* end for different grid size */
+      } /* end one epoach */
+    
+    // if(iter%1==0) Rprintf("iter=%d delta=%g %g %g %g %g: %g %g %g %g\n",iter,delta,prob[1],mu[1],alpha[1],beta[1],prob[2],mu[2],alpha[2],beta[2]);
+    
+    }      /* end for iterations */
+    
+    
+    for(sum=0.0,j=1; j<=grid; j++) sum+=exp(logprob[j]);
+    for(j=1; j<=grid; j++) prob[j]=exp(logprob[j])/sum;
+    
+    for(entropy=0.0,i=1; i<=*DATA_NUM; i++){
+      max=-1.0e+100;
+      for(j=1; j<=grid; j++){
+        wei[j]=dlogGnormal(z,mu[j],alpha[j],beta[j])+log(prob[j]);
+        if(wei[j]>max){ max=wei[j]; }
+      }
+      for(sum=0.0, j=1; j<=grid; j++) sum+=exp(wei[j]-max);
+      entropy+=log(sum)+max;
+    }
+    entropy*=-1.0/(*DATA_NUM);
+    entropy+=0.5*(grid*3+grid-1)*log(1.0**DATA_NUM)/(*DATA_NUM);
+    
+    
+    
+    if(entropy<=bestentropy){
+      bestentropy=entropy;
+      bestgrid=grid;
+      for(j=1; j<=grid; j++){ bestprob[j]=prob[j]; bestmu[j]=mu[j];
+      bestalpha[j]=alpha[j]; bestbeta[j]=beta[j]; }
+    }
+  }  /* end for different grid size */
     
     /* calculating the distance between the mixture components */
     for(k=1; k<=bestgrid; k++){
-        MCMCGnormal(bestmu[k],bestalpha[k],bestbeta[k],samsize,rez);
-        for(j=1; j<=samsize; j++) resam[k][j]=rez[j];
+      MCMCGnormal(bestmu[k],bestalpha[k],bestbeta[k],samsize,rez);
+      for(j=1; j<=samsize; j++) resam[k][j]=rez[j];
     }
     indexx(bestgrid, bestmu, indx2);
-    for(j=1; j<bestgrid; j++){
-        k1=indx2[j]; k2=indx2[j+1];
-        tep1=tep2=0.0;
-        for(i=1; i<=samsize; i++){
-            tep1+=dlogGnormal(resam[k1][i],bestmu[k1],bestalpha[k1],bestbeta[k1])-
-            dlogGnormal(resam[k1][i],bestmu[k2],bestalpha[k2],bestbeta[k2]);
-            tep2+=dlogGnormal(resam[k2][i],bestmu[k2],bestalpha[k2],bestbeta[k2])-
-            dlogGnormal(resam[k2][i],bestmu[k1],bestalpha[k1],bestbeta[k1]);
-        }
-        if(tep1<tep2) dis[j]=tep1/samsize;
-        else dis[j]=tep2/samsize;
+  for(j=1; j<bestgrid; j++){
+    k1=indx2[j]; k2=indx2[j+1];
+    tep1=tep2=0.0;
+    for(i=1; i<=samsize; i++){
+      tep1+=dlogGnormal(resam[k1][i],bestmu[k1],bestalpha[k1],bestbeta[k1])-
+        dlogGnormal(resam[k1][i],bestmu[k2],bestalpha[k2],bestbeta[k2]);
+      tep2+=dlogGnormal(resam[k2][i],bestmu[k2],bestalpha[k2],bestbeta[k2])-
+        dlogGnormal(resam[k2][i],bestmu[k1],bestalpha[k1],bestbeta[k1]);
     }
-    
-    
-    /* determine the number of components for f_0 */
-    dif[1]=1.0;
-    for(j=2; j<bestgrid; j++) dif[j]=(dis[j]-dis[j-1])/dis[j-1];
-    dif[bestgrid]=-1.0;
-    com=1; ok=0;
-    while(ok==0 && com<bestgrid-1){
-        if(dif[com]*dif[com+1]<0.0) ok=1;
-        else com++;
+    if(tep1<tep2) dis[j]=tep1/samsize;
+    else dis[j]=tep2/samsize;
+  }
+  
+  
+  /* determine the number of components for f_0 */
+  dif[1]=1.0;
+  for(j=2; j<bestgrid; j++) dif[j]=(dis[j]-dis[j-1])/dis[j-1];
+  dif[bestgrid]=-1.0;
+  com=1; ok=0;
+  while(ok==0 && com<bestgrid-1){
+    if(dif[com]*dif[com+1]<0.0) ok=1;
+    else com++;
+  }
+  /*
+  max=0.0; k=1;
+  for(j=2; j<bestgrid; j++)
+  if(dif[j]>max){ max=dif[j]; k=j; }
+  if(k<com) com=k;
+  */
+  
+  
+  if((*GRID)==2 && (*mingrid)==2) com=1;
+  else com=bestgrid-1;
+  
+  
+  
+  /* calculating FDR */
+  
+  for(i=1; i<=*DATA_NUM; i++){
+    z=datax[indx[i]];
+    for(sum=0.0,m=1; m<=com; m++){
+      k=indx2[m];
+      if(z>bestmu[k]){
+        un=exp(bestbeta[k]*log((z-bestmu[k])/bestalpha[k]));
+        tep=(0.5-0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
+      } else if(z<bestmu[k]){
+        un=exp(bestbeta[k]*log((bestmu[k]-z)/bestalpha[k]));
+        tep=(0.5+0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
+      } else tep=0.5*bestprob[k];
+      sum+=tep;
     }
-    /*
-     max=0.0; k=1;
-     for(j=2; j<bestgrid; j++)
-     if(dif[j]>max){ max=dif[j]; k=j; }
-     if(k<com) com=k;
-     */
+    FDR[i]=sum;
     
-   
-    
-    // com=bestgrid-1;
-    com=1;
-    
-    
-    /* calculating FDR */
-    
-    for(i=1; i<=*DATA_NUM; i++){
-        z=datax[indx[i]];
-        for(sum=0.0,m=1; m<=com; m++){
-            k=indx2[m];
-            if(z>bestmu[k]){
-                un=exp(bestbeta[k]*log((z-bestmu[k])/bestalpha[k]));
-                tep=(0.5-0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
-            } else if(z<bestmu[k]){
-                un=exp(bestbeta[k]*log((bestmu[k]-z)/bestalpha[k]));
-                tep=(0.5+0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
-            } else tep=0.5*bestprob[k];
-            sum+=tep;
-        }
-        FDR[i]=sum;
-        
-        for(sum=0.0, k=1; k<=bestgrid; k++){
-            if(z>bestmu[k]){
-                un=exp(bestbeta[k]*log((z-bestmu[k])/bestalpha[k]));
-                tep=(0.5-0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
-            } else if(z<bestmu[k]){
-                un=exp(bestbeta[k]*log((bestmu[k]-z)/bestalpha[k]));
-                tep=(0.5+0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
-            } else tep=0.5*bestprob[k];
-            sum+=tep;
-        }
-        FDR[i]/=sum;
+    for(sum=0.0, k=1; k<=bestgrid; k++){
+      if(z>bestmu[k]){
+        un=exp(bestbeta[k]*log((z-bestmu[k])/bestalpha[k]));
+        tep=(0.5-0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
+      } else if(z<bestmu[k]){
+        un=exp(bestbeta[k]*log((bestmu[k]-z)/bestalpha[k]));
+        tep=(0.5+0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
+      } else tep=0.5*bestprob[k];
+      sum+=tep;
     }
-    
-    min=FDR[1]; Q[1]=min;
-    for(i=2; i<=*DATA_NUM; i++){
-        if(FDR[i]<min) min=FDR[i];
-        Q[i]=min;
+    FDR[i]/=sum;
+  }
+  
+  min=FDR[1]; Q[1]=min;
+  for(i=2; i<=*DATA_NUM; i++){
+    if(FDR[i]<min) min=FDR[i];
+    Q[i]=min;
+  }
+  
+  
+  
+  
+  /* alternative method of FDR calculation */
+  for(i=1; i<=*DATA_NUM; i++){
+    z=datax[indx[i]];
+    for(sum=0.0,m=1; m<=com; m++){
+      k=indx2[m];
+      if(z>bestmu[k]){
+        un=exp(bestbeta[k]*log((z-bestmu[k])/bestalpha[k]));
+        tep=(0.5-0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
+      } else if(z<bestmu[k]){
+        un=exp(bestbeta[k]*log((bestmu[k]-z)/bestalpha[k]));
+        tep=(0.5+0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
+      } else tep=0.5*bestprob[k];
+      sum+=tep;
     }
-    
-
-    
-    
-    /* alternative method of FDR calculation */
-    for(i=1; i<=*DATA_NUM; i++){
-        z=datax[indx[i]];
-        for(sum=0.0,m=1; m<=com; m++){
-            k=indx2[m];
-            if(z>bestmu[k]){
-                un=exp(bestbeta[k]*log((z-bestmu[k])/bestalpha[k]));
-                tep=(0.5-0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
-            } else if(z<bestmu[k]){
-                un=exp(bestbeta[k]*log((bestmu[k]-z)/bestalpha[k]));
-                tep=(0.5+0.5*gammp(1.0/bestbeta[k],un))*bestprob[k];
-            } else tep=0.5*bestprob[k];
-            sum+=tep;
-        }
-        FDR[i]=sum**DATA_NUM/(*DATA_NUM-i+1);
-        if(FDR[i]>1.0) FDR[i]=1.0;
-    }
-    
-    min=FDR[1]; Q[1]=min;
-    for(i=2; i<=*DATA_NUM; i++){
-        if(FDR[i]<min) min=FDR[i];
-        Q[i]=min;
-    }
-    
-    ins=fopen("aaa.fdr", "w");
-    for(i=1; i<=*DATA_NUM; i++)
-        fprintf(ins, " %5d %5d %g %g %g\n", row[indx[i]],col[indx[i]],datax[indx[i]],FDR[i],Q[i]);
-    fprintf(ins, "\n");
-    fclose(ins);
-
-
-    
-    
-    free_dvector(datax,1,MAX_NUM);
-    free_ivector(row,1,MAX_NUM);
-    free_ivector(col,1,MAX_NUM);
-    free_dvector(mu,1,GRID);
-    free_dvector(alpha,1,GRID);
-    free_dvector(beta,1,GRID);
-    free_dvector(prob,1,GRID);
-    free_dvector(wei,1,GRID);
-    free_ivector(sam,1,MAX_NUM);
-    free_ivector(indx,1,MAX_NUM);
-    free_ivector(indx2,1,GRID);
-    free_dvector(FDR,1,MAX_NUM);
-    free_dvector(Q,1,MAX_NUM);
-    free_dvector(bestmu,1,GRID);
-    free_dvector(bestalpha,1,GRID);
-    free_dvector(bestbeta,1,GRID);
-    free_dvector(bestprob,1,GRID);
-    free_dvector(logprob,1,GRID);
-    free_dmatrix(resam,1,GRID,1,samsize);
-    free_dvector(rez,1,samsize);
-    free_dvector(dis,1,GRID);
-    free_dvector(dif,1,GRID);
+    FDR[i]=sum*(*DATA_NUM)/(*DATA_NUM-i+1);
+    if(FDR[i]>1.0) FDR[i]=1.0;
+  }
+  
+  min=FDR[1]; Q[1]=min;
+  for(i=2; i<=*DATA_NUM; i++){
+    if(FDR[i]<min) min=FDR[i];
+    Q[i]=min;
+  }
+  
+  ins=fopen("aaa.fdr", "w");
+  for(i=1; i<=*DATA_NUM; i++)
+    fprintf(ins, " %5d %5d %g %g %g\n", row[indx[i]],col[indx[i]],datax[indx[i]],FDR[i],Q[i]);
+  fprintf(ins, "\n");
+  fclose(ins);
+  
+  
+  
+  
+  free_dvector(datax,1,MAX_NUM);
+  free_ivector(row,1,MAX_NUM);
+  free_ivector(col,1,MAX_NUM);
+  free_dvector(mu,1,(*GRID));
+  free_dvector(alpha,1,(*GRID));
+  free_dvector(beta,1,(*GRID));
+  free_dvector(prob,1,(*GRID));
+  free_dvector(wei,1,(*GRID));
+  free_ivector(sam,1,MAX_NUM);
+  free_ivector(indx,1,MAX_NUM);
+  free_ivector(indx2,1,(*GRID));
+  free_dvector(FDR,1,MAX_NUM);
+  free_dvector(Q,1,MAX_NUM);
+  free_dvector(bestmu,1,(*GRID));
+  free_dvector(bestalpha,1,(*GRID));
+  free_dvector(bestbeta,1,(*GRID));
+  free_dvector(bestprob,1,(*GRID));
+  free_dvector(logprob,1,(*GRID));
+  free_dmatrix(resam,1,(*GRID),1,samsize);
+  free_dvector(rez,1,samsize);
+  free_dvector(dis,1,(*GRID));
+  free_dvector(dif,1,(*GRID));
 }
 
 

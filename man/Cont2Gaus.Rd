@@ -26,10 +26,6 @@ This is the function that transform the count data into Gaussian data which incl
 
 
 \examples{
-library(equSA)
-data(count)
-subset <- count[1:5,1:10]
-Cont2Gaus(subset,total_iteration=10)
       \dontshow{
             library(equSA)
             data(count)
@@ -37,9 +33,9 @@ Cont2Gaus(subset,total_iteration=10)
             Cont2Gaus(subset,total_iteration=10)
       }
       \donttest{
-           # library(equSA)
-           # data(count)
-           # Cont2Gaus(count,total_iteration=1000)
+           library(equSA)
+           data(count)
+           Cont2Gaus(count,total_iteration=1000)
       }
 }
 

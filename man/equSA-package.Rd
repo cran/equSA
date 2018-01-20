@@ -17,8 +17,8 @@ In the second part, the package implements the p-learning algorithm which is use
 \tabular{rl}{
 Package: \tab equSA\cr
 Type: \tab Package\cr
-Version: \tab 1.1.4\cr
-Date: \tab 22018-01-09\cr
+Version: \tab 1.1.5\cr
+Date: \tab 2018-01-16\cr
 License: \tab GPL-2\cr
 }
 
@@ -69,7 +69,6 @@ Liu, H., Lafferty, J. and Wasserman, L. (2009). The Nonparanormal: Semiparametri
  of High Dimensional Undirected Graphs. Journal of Machine Learning Research , 10, 2295-2328.
  
 
-
 Jia, B., Xu, S., Xiao, G., Lamba, V., Liang, F. (2017) Inference of Genetic Networks from Next Generation Sequencing Data. Biometrics.
 
 Jia, B. and Liang, F. (2017) Joint Estimation of Multiple Gaussian Graphical Models via Multiple Hypothesis Tests (preparing)
@@ -87,7 +86,17 @@ Kalisch, Markus and B{\"u}hlmann, Peter (2007). Estimating high-dimensional dire
 }
 \keyword{ package }
 \examples{
-#library(equSA)
-#data(SR0)
-#equSAR(SR0)
+\dontshow{
+library(equSA)
+data(TR0)
+subset <- TR0[1:100,1:10]
+equSAR(subset,GRID=2,iteration=100)
+}
+\donttest{
+library(equSA)
+data(TR0)
+subset <- TR0
+equSAR(subset)
+}
+
 }

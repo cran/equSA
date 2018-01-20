@@ -5,7 +5,7 @@
 
 \usage{
 equSAR(iData,iMaxNei=as.integer(iDataNum/log(iDataNum)),
-ALPHA1=0.05,ALPHA2=0.05)
+ALPHA1=0.05,ALPHA2=0.05,GRID=2,iteration=100)
 }
 
 \arguments{
@@ -16,6 +16,8 @@ ALPHA1=0.05,ALPHA2=0.05)
  the conditioning set. Including a few false variables in the conditioning set will not hurt much the 
  accuracy of the \eqn{\psi}-partial correlation coefficient.}
   \item{ ALPHA2  }{ The significance level of \eqn{\psi} screening.}
+  \item{GRID}{The number of components for the \eqn{\psi}-scores. The default value is 2.}
+    \item{iteration}{Number of iterations for screening. The default value is 100.}
 }
 \details{
 This is the main function of the package that fit the Gaussian Graphical Models and obtain the \eqn{\psi} scores and adjacency matrix.
@@ -30,10 +32,19 @@ A list of two elements:
 \author{ Bochao Jia and Faming Liang\email{faliang@ufl.edu}}
 
 \examples{
+\dontshow{
 library(equSA)
 data(SR0)
 subset <- SR0[1:100,1:10]
+equSAR(subset,GRID=3,iteration=20)
+}
+\donttest{
+library(equSA)
+data(SR0)
+subset <- SR0
 equSAR(subset)
+}
+
 }
 
 \references{

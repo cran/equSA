@@ -1,4 +1,4 @@
- equSAR <- function(iData,iMaxNei=as.integer(iDataNum/log(iDataNum)),ALPHA1=0.05,ALPHA2=0.05)
+ equSAR <- function(iData,iMaxNei=as.integer(iDataNum/log(iDataNum)),ALPHA1=0.05,ALPHA2=0.05,GRID=2,iteration=100)
 {
   iDataNum=length(iData[,1]);
   iDataP=length(iData[1,]);
@@ -15,7 +15,10 @@
       as.integer(iDataNum),
       as.integer(iDataP),
       as.numeric(ALPHA1),
-      as.numeric(ALPHA2)
+      as.numeric(ALPHA2),
+      as.integer(GRID),
+      as.integer(GRID),
+      as.integer(iteration)
       )
    A <- matrix(scan("sim0.mat"),ncol=iDataP,byrow=TRUE)
    score <-matrix(scan("sim0.pcor.est.ini"), ncol=3, byrow=TRUE)
@@ -27,7 +30,7 @@
    return(result)
 }
 
-psical <- function(iData,iMaxNei=as.integer(iDataNum/log(iDataNum)),ALPHA1=0.05)
+psical <- function(iData,iMaxNei=as.integer(iDataNum/log(iDataNum)),ALPHA1=0.05,GRID=2,iteration=100)
 {
   iDataNum=length(iData[,1]);
   iDataP=length(iData[1,]);
@@ -43,7 +46,10 @@ psical <- function(iData,iMaxNei=as.integer(iDataNum/log(iDataNum)),ALPHA1=0.05)
      as.integer(iMaxNei),
      as.integer(iDataNum),
      as.integer(iDataP),
-     as.numeric(ALPHA1)
+     as.numeric(ALPHA1),
+     as.integer(GRID),
+     as.integer(GRID),
+     as.integer(iteration)
   )
   score <-matrix(scan("sim0.pcor.est.ini"), ncol=3, byrow=TRUE)
   unlink("sim0.pcor.est.ini")
@@ -77,7 +83,7 @@ ContTran <- function(iData,total_iteration=5000,stepsize=0.05)
   return(continuz)
 }
 
- pcorselR <- function(score,ALPHA2=0.05)
+ pcorselR <- function(score,ALPHA2=0.05,GRID=2,iteration=100)
  {
    irow=score[,1];
    icol=score[,2];
@@ -87,7 +93,10 @@ ContTran <- function(iData,total_iteration=5000,stepsize=0.05)
       as.integer(irow),
       as.integer(icol),
       as.numeric(idatax),
-      as.integer(length)
+      as.integer(length),
+      as.integer(GRID),
+      as.integer(GRID),
+      as.integer(iteration)
    )
    
    aaa<-matrix(scan("aaa.fdr"), ncol=5, byrow=TRUE)
