@@ -1,8 +1,8 @@
 
 ## Main function
-SimGraph = function(p, graph = "AR(2)", v = NULL, u = NULL, g = NULL, prob = NULL, vis = FALSE, verbose = TRUE){	
+GauSim = function(n, p, graph = "AR(2)", v = NULL, u = NULL, g = NULL, prob = NULL, vis = FALSE, verbose = TRUE){	
   gcinfo(FALSE)
-  if(verbose) cat("Generating data from the multivariate ZINB distribution with the", graph,"graph structure....\n")
+  if(verbose) cat("Generating data from the Gaussian distribution with the", graph,"graph structure....\n")
   if(is.null(g)){
     g = 1
     if(graph == "hub" || graph == "cluster"){
@@ -101,12 +101,14 @@ SimGraph = function(p, graph = "AR(2)", v = NULL, u = NULL, g = NULL, prob = NUL
     diag(theta) = 0
     omega = theta*v
   }
-
+  
   
   # make omega positive definite and standardized
   diag(omega) = abs(min(eigen(omega)$values)) + 0.1 + u
-  sigma = cov2cor(solve(omega))
-  sim = list(sigma = sigma, theta = theta)
+  sigma = solve(omega)
+  mu <- rep(0,p)
+  data <- rmvnorm(n,mu,sigma)
+  sim = list(data = data, sigma = sigma, theta = theta)
   return(sim)
 }
 

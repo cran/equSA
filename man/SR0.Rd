@@ -2,14 +2,14 @@
 \alias{SR0}
 \docType{data}
 
-\title{One example dataset for equSA} 
+\title{One example dataset for \eqn{\psi}-learning alogorithm} 
 
 \description{
-SR0 is a simulated dataset for illustration our equSA alogorithm.
+SR0 is a simulated dataset for illustration our \eqn{\psi}-learning alogorithm.
 }
 \usage{data(SR0)}
 \format{
- SR0 dataset is a 100x200 matrix. Each row represents a observation and each column represents a variable.   
+ SR0 dataset is a \eqn{100x200} matrix. Each row represents a observation and each column represents a variable.   
 }
 
 

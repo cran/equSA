@@ -4,9 +4,6 @@ combineR <- function(Data1,Data2,ALPHA1=0.05,ALPHA2=0.05)
 
   DataP=length(Data1[1,]);
   
-  
-  
-  set.seed(222)
   ################ Data generation #####################
   p<-DataP;
   N<-p*(p-1)/2;

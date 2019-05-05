@@ -8,21 +8,21 @@ Cont2Gaus(iData,total_iteration=5000,stepsize=0.05)
 }
 
 \arguments{
-  \item{ iData }{ a \emph{n}x\emph{p} count data matrix.}
+  \item{ iData }{ a \eqn{n}x\eqn{p} count data matrix.}
   \item{ total_iteration  }{ Total iteration number for Baysian random effect model-based transformation, default of 5000.}
   \item{ stepsize  }{The stepsize of updating parameters in transformation, default of 0.05.}
 }
 \details{
-This is the function that transform the count data into Gaussian data which include two steps. First, we do data continuized transformation \code{ContTran(data,...)} and then we apply the semiparametric transformation (Liu, H et al, 2009) provided in \emph{"huge"} packages to tranform continuized data into Gaussian distributed. 
+This is the function that transform the count data into Gaussian data which include two steps. First, we do data continuized transformation \code{ContTran(data,...)} and then we apply the semiparametric transformation (Liu, H et al, 2009) provided in \pkg{huge} packages to tranform continuized data into Gaussian distributed. 
 
 }
 \value{
-  \item{Gaus}{\emph{n}x\emph{p} matrix of Normalized data with Gaussian distribution.}
+  \item{Gaus}{A \eqn{n}x\eqn{p} matrix of normalized data with Gaussian distribution.}
 
 %% ...
 }
 
-\author{ Bochao Jia\email{jbc409@ufl.edu} and Faming Liang}
+\author{ Bochao Jia\email{jbc409@gmail.com} and Faming Liang}
 
 
 \examples{
@@ -41,10 +41,9 @@ This is the function that transform the count data into Gaussian data which incl
 
 \references{
 
-Jia, B., Xu, S., Xiao, G., Lamba, V., Liang, F. (2017) Inference of Genetic Networks from Next Generation Sequencing Data. Biometrics, in press.
+Jia, B., Xu, S., Xiao, G., Lamba, V., Liang, F. (2017) Inference of Genetic Networks from Next Generation Sequencing Data. Biometrics.
 
-Liu, H., Lafferty, J. and Wasserman, L. (2009). The Nonparanormal: Semiparametric Estimation 
- of High Dimensional Undirected Graphs. Journal of Machine Learning Research , 10, 2295-2328.
+Liu, H., Lafferty, J. and Wasserman, L. (2009). The Nonparanormal: Semiparametric Estimation of High Dimensional Undirected Graphs. Journal of Machine Learning Research , 10, 2295-2328.
 }
 
 \keyword{Cont2Gaus}

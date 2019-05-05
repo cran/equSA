@@ -15,9 +15,9 @@ plotGraph(net, fn = "", th = 1e-06, mylayout = NULL)
 }
 \details{This function serves as the alternative plotting function to allow users to plot a specific network with specific layout, such as plotting the simulated network.}
 \value{
-Returns the layout object from \code{igraph} package - numeric matrix of two columns and the rows with the same number as the number of vertices. }
+Returns the layout object from \pkg{igraph} package - numeric matrix of two columns and the rows with the same number as the number of vertices. }
 \examples{
 library(equSA)
-data(SR0_mat)
-plotGraph(as.matrix(SR0_mat))
+Adj <- GauSim(100,200,graph="scale-free")$theta
+plotGraph(Adj)
 }

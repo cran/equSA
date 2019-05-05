@@ -23,7 +23,7 @@ This is the function that conduct multiple hypothesis test for \eqn{\psi} scores
 }
 
 \author{ 
-Bochao Jia, Faming liang\email{faliang@ufl.edu}
+Bochao Jia, Faming liang\email{fmliang@purdue.edu}
 }
 
 \examples{
@@ -58,7 +58,6 @@ pcorselR(y,ALPHA2=0.05)
 }
 
 \references{
-Liang, F., Song, Q. and Qiu, P. (2015). An Equivalent Measure of Partial Correlation Coefficients for High Dimensional Gaussian Graphical Models. J. Amer. Statist. Assoc., 110, 1248-1265.
 
 Liang, F. and Zhang, J. (2008) Estimating FDR under general dependence using stochastic approximation.  Biometrika,  95(4), 961-977.
 }

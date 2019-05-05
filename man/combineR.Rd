@@ -1,34 +1,44 @@
 \name{combineR}
 \alias{combineR}
 \title{ Combine two networks.}
-\description{Combine two networks to a single one from datasets of two groups by our calculated \eqn{\psi} scores.}
+\description{Combine two networks to a single one.}
 
 \usage{
 combineR(Data1,Data2,ALPHA1=0.05,ALPHA2=0.05)
 }
 
 \arguments{
-  \item{ Data1 }{ a \emph{\eqn{n_1}}x\emph{p} data matrix.}
-  \item{ Data2 }{ a \emph{\eqn{n_2}}x\emph{p} data matrix.}
+  \item{ Data1 }{ a \eqn{n_1}x\eqn{p} data matrix.}
+  \item{ Data2 }{ a \eqn{n_2}x\eqn{p} data matrix.}
   \item{ ALPHA1  }{ The significance level of correlation screening for each dataset. In general, a high significance level of correlation screening will lead to 
- a slightly large separator set S_{ij}, which reduces the risk of missing some important variables in 
+ a slightly large separator set \eqn{S_{ij}}, which reduces the risk of missing some important variables in 
  the conditioning set. Including a few false variables in the conditioning set will not hurt much the 
  accuracy of the \eqn{\psi}-partial correlation coefficient.}
   \item{ ALPHA2  }{ The significance level of \eqn{\psi} screening for integrative estimation of \eqn{\psi} scores.}
 }
 
 \value{
-  \item{A}{\emph{p}x\emph{p} Adjacency matrix of the combined graph.}
+  \item{A}{\eqn{p}x\eqn{p} Adjacency matrix of the combined graph.}
 %% ...
 }
 
-\author{ Bochao Jia\email{jbc409@ufl.edu} and Faming Liang}
+\author{ Bochao Jia\email{jbc409@gmail.com} and Faming Liang}
 
 \examples{
-#library(equSA)
-#data(SR0)
-#data(TR0)
-#combineR(SR0,TR0)
+
+\dontshow{
+library(equSA)
+data1 <- GauSim(100,30)$data
+data2 <- GauSim(100,30)$data
+combineR(data1,data2)
+}
+\donttest{
+library(equSA)
+data(SR0)
+data(TR0)
+combineR(SR0,TR0)
+}
+
          
 }
 

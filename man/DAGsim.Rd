@@ -1,77 +1,62 @@
 \name{DAGsim}
 \alias{DAGsim}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-%%  ~~function to do ... ~~
-Simulate a directed acyclic graph with mixed data (continuous and binary)
-}
-\description{
-Simulate a directed acyclic graph with mixed data (continuous and binary).
-}
+\title{Simulate a directed acyclic graph with mixed data (gaussian and binary)}
+\description{Simulate a directed acyclic graph with mixed data (gaussian and binary).}
+
 \usage{
-DAGsim(n, p, sparsity = 0.02, p.binary)
+DAGsim(n, p, sparsity = 0.02,  p.binary, type="AR(2)", verbose = TRUE)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
-  \item{n}{
-%%     ~~Describe \code{x} here~~
-number of observations.
-}
-  \item{p}{
-%%     ~~Describe \code{x} here~~
-number of variables.
+  \item{n}{Number of observations.}
+  \item{p}{Number of variables. Not applicable to the graph of \code{"alarm"} type.}
+\item{sparsity}{Sparsity of the graph in the \code{"random"} type, the default value is 0.02. Not applicable to other types.}
+\item{p.binary}{Number of binary variables. Not applicable to the graph of \code{"alarm"} type. The default value is \code{p/2}.}
+
+\item{type}{The graph structure with 3 options: \code{"random"}, \code{"alarm"} and \code{"AR(2)"} (default).}
+
+\item{verbose}{If \code{verbose = FALSE}, tracing information printing is disabled. The default value is \code{TRUE}.}
 }
 
-  \item{sparsity}{
-%%     ~~Describe \code{x} here~~
-sparsity of the graph.
-}
-
-  \item{p.binary}{
-%%     ~~Describe \code{x} here~~
-number of binary variables.
-}
-
-}
 \details{
-%%  ~~ If necessary, more details than the description above ~~
-The default value of sparsity is 0.02.
+Given the type of graph, the patterns are generated as below:\cr\cr
+(I) \code{"random"}: Each pair of off-diagonal elements are randomly set \code{edgematrix[i,j]=1} for \code{i < j} with probability \code{sparsity}, and \code{0} otherwise. It results in about \code{p*(p-1)*sparsity/2} edges in the graph.\cr\cr
+(II)\code{"AR(2)"}: The off-diagonal elements are set to be \code{theta[i,j]=1} if \code{i<j} and \code{|i-j|<=2} and \code{0} otherwise.\cr\cr
+(III) \code{"alarm"}: The graph structure is directly borrowed from package \pkg{'bnlearn'}, which has 37 variables with 46 edges. See \pkg{'bnlearn'} for more detail.
 }
+
 \value{
-
-
-A list of four objects. 
-\item{Adjacency.matrix}{\emph{p}x\emph{p} The simulated adjacency matrix which indicates the true structure of directed acyclic graph. If the (i,j)th element is equal to 1, there exists a directed edge from \eqn{X_i} to eqn{X_j}.}
-\item{Data}{The simulated dataset in a \emph{n}x\emph{p} matrix.}
-
-\item{gaussian.index}{The index of continuous variables.}
-
+A list of five objects. 
+\item{edgematrix}{A \eqn{p}x\eqn{p} matrix which indicates the true structure of directed acyclic graph. If the (i,j)th element is equal to 1, there exists a directed edge from \eqn{X_i} to \eqn{X_j}.}
+\item{data}{The simulated dataset in a \eqn{n}x\eqn{p} matrix.}
+\item{moral.matrix}{The simulated adjacency matrix of the moral graph, which is the undircted version of Bayesian network.}
+\item{gaussian.index}{The index of Gaussian variables.}
 \item{binary.index}{The index of binary variables.}
 }
 \references{
-%% ~put references to the literature/web site here ~
-Kalisch, Markus and B{\"u}hlmann, Peter (2007). Estimating high-dimensional directed acyclic graphs with the PC-algorithm. Journal of Machine Learning Research, 8, 613-636.
 
-Suwa, Xu and Faming, Liang (2017). Learning High-Dimensional Bayesian Networks for General Types of
-Random Variables. Submitted to Biometrika. 
+Kalisch, M., and Buhlmann, P. (2007). Estimating high-dimensional directed acyclic graphs with the PC-algorithm. Journal of Machine Learning Research, 8(Mar), 613-636.
 
+Xu, S., Jia, B., and Liang, F. (2018). Learning Moral Graphs in Construction of High-Dimensional Bayesian Networks for Mixed Data. Submitted. 
+  
+
+I. A. Beinlich, H. J. Suermondt, R. M. Chavez, and G. F. Cooper. The ALARM Monitoring System: A Case Study with Two Probabilistic Inference Techniques for Belief Networks. In Proceedings of the 2nd European Conference on Artificial Intelligence in Medicine, pages 247-256. Springer-Verlag, 1989.
 
 }
 \author{
-%%  ~~who you are~~
-Suwa Xu, Faming Liang
+Suwa Xu, Bochao Jia and Faming Liang
 }
 
 \examples{
-# library(equSA)
-# set.seed(3)
-# dagsim <- DAGsim(n = 3000, p = 100, sparsity = 0.02, p.binary = 50)
-# data3000 <- dagsim$data
-# cont_index  <- dagsim$gaussian.index
-# binary_index<- dagsim$binary.index
-# truegraph <- dagsim$Adjacency.matrix
+\dontshow{
+library(equSA)
+DAGsim(n=300, type="alarm")
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+\donttest{
+library(equSA)
+DAGsim(n=300, p=100, type="AR(2)", p.binary=50)
+}
+
+}
 \keyword{DAGSim}
 

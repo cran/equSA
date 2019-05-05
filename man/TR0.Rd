@@ -2,14 +2,14 @@
 \alias{TR0}
 \docType{data}
 
-\title{One example dataset for equSA} 
+\title{One example dataset for \eqn{\psi}-learning alogorithm} 
 
 \description{
-TR0 is a simulated dataset for illustration our equSA alogorithm.
+TR0 is a simulated dataset for illustration our \eqn{\psi}-learning alogorithm.
 }
 \usage{data(TR0)}
 \format{
- TR0 dataset is a 100x200 matrix. Each row represents a observation and each column represents a variable.   
+ TR0 dataset is a \eqn{100x200} matrix. Each row represents a observation and each column represents a variable.   
 }
 
 

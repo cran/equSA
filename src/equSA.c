@@ -1905,7 +1905,7 @@ double *datax, **Qmat;
             
             grid=GRID+1;  bestentropy=1.0e+100;
             double init_prob;
-            if (GRID>=3) init_prob = 0.45;
+            if (GRID>=3) init_prob = 0.5;
             else init_prob = 0.99;
             while(grid>mingrid){
               
@@ -2169,9 +2169,9 @@ double *datax, **Qmat;
     return 0;
 }
 
-int psi_calculation(MaxNei, DataNum, DataP, M, Qmat, COV, qthreshold, row, col, score, psi)
+int psi_calculation(MaxNei, DataNum, DataP, M, Qmat, COV, qthreshold, row, col, score, psi, long_score)
 int M, *row, *col, MaxNei, DataNum, DataP;
-double **Qmat, **COV, qthreshold, *score, *psi;
+double **Qmat, **COV, qthreshold, *score, *psi, *long_score;
 {
 
     int *x,*y,*indx, *indx0, **sep, *S;
@@ -2244,7 +2244,7 @@ double **Qmat, **COV, qthreshold, *score, *psi;
     
     
     v=0;
-    ins=fopen("sim0.pcor.est.ini","w");
+    //ins=fopen("sim0.pcor.est.ini","w");
     for(i=1; i<=DataP; i++){
         for(j=i+1; j<=DataP; j++){
             
@@ -2288,15 +2288,18 @@ double **Qmat, **COV, qthreshold, *score, *psi;
              pscore=-1.0*inverse_normal_cdf_log(q);
              */
             
-            fprintf(ins, " %d %d %g\n", i,j,zscore);
+            //fprintf(ins, " %d %d %g\n", i,j,zscore);
             
             v++;
             psi[v]=zscore;
+            long_score[(v-1)*3] = i;
+            long_score[(v-1)*3+1] = j;
+            long_score[(v-1)*3+2] = zscore;
         }
        // if(i%100==0) Rprintf("psi-score i=%d\n", i);
     }
     
-    fclose(ins);
+   // fclose(ins);
     
     
 loop:free_ivector(x,1,DataP);
@@ -2367,7 +2370,7 @@ double *datax, **Qmat;
             
             grid=GRID+1;  bestentropy=1.0e+100;
             double init_prob;
-            if (GRID>=3) init_prob = 0.45;
+            if (GRID>=3) init_prob = 0.5;
             else init_prob = 0.99;
             while(grid>mingrid){
               
@@ -2641,7 +2644,8 @@ void equSA_sub(double DataX[],
             double *ALPHA1,
             int *GRID,
             int *mingrid,
-            int *iteration)
+            int *iteration,
+            double *long_score)
 {
 #define pi 3.14159265
     int  DATA_NUM, DATA_NUM_PLUS, *no, *row, *col, *subrow, *subcol,*indx, **E;
@@ -2787,23 +2791,9 @@ void equSA_sub(double DataX[],
     
     /*** psi-score calculation *****/
     
-   psi_calculation(*iMaxNei, *iDataNum, *iDataP,M,Qmat,COV,*ALPHA1,row,col,score,psi);
+   psi_calculation(*iMaxNei, *iDataNum, *iDataP,M,Qmat,COV,*ALPHA1,row,col,score,psi,long_score);
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     free_dvector(datax,1,DATA_NUM_PLUS);
     free_dvector(score,1,DATA_NUM_PLUS);
     free_ivector(row,1,DATA_NUM_PLUS);
@@ -2836,244 +2826,251 @@ void equSA_sub(double DataX[],
 
 
 void equSA1(double DataX[],
-           int *iMaxNei,
-           int *iDataNum,
-           int *iDataP,
-           double *ALPHA1,
-           double *ALPHA2,
-           int *GRID, 
-           int *mingrid,
-           int *iteration)
+            int *iMaxNei,
+            int *iDataNum,
+            int *iDataP,
+            double *ALPHA1,
+            double *ALPHA2,
+            int *GRID, 
+            int *mingrid,
+            int *iteration,
+            int *long_mat,
+            double *long_score)
 {
-   #define pi 3.14159265
-    FILE *ins;
-    int  DATA_NUM, DATA_NUM_PLUS, *no, *row, *col, *subrow, *subcol,*indx, **E;
-    int i, j, k, m, M, m0;
-    double *datax, **iDataX, **COV, **CORR, *score, *subscore, *psi, **Qmat;
-    double q, sum, un, qscore;
-    static int ratio;
-   // static double ALPHA1=0.05, ALPHA2=0.05;
-    
-
-
-    
-
-    
-
-    
-    DATA_NUM=*iDataP*(*iDataP-1)/2;
-    DATA_NUM_PLUS=*iDataP*(*iDataP+1)/2;
-    ratio=ceil(DATA_NUM/100000.0);
-    
-    
-    datax=dvector(1,DATA_NUM_PLUS);
-    score=dvector(1,DATA_NUM_PLUS);
-    row=ivector(1,DATA_NUM_PLUS);
-    col=ivector(1,DATA_NUM_PLUS);
-    no=ivector(1,DATA_NUM);
-    indx=ivector(1,DATA_NUM);
-    iDataX=dmatrix(1,*iDataNum,1,*iDataP);
-    COV=dmatrix(1,*iDataP,1,*iDataP);
-    CORR=dmatrix(1,*iDataP,1,*iDataP);
-    subrow=ivector(1,DATA_NUM);
-    subcol=ivector(1,DATA_NUM);
-    subscore=dvector(1,DATA_NUM);
-    Qmat=dmatrix(1,DATA_NUM,1,4);
-    psi=dvector(1,DATA_NUM);
-    E=imatrix(1,*iDataP,1,*iDataP);
-    
-    
-    
-    for(i=1; i<=*iDataNum; i++){
-        for(j=1; j<=*iDataP; j++)
-        iDataX[i][j]=DataX[(i-1)*(*iDataP)+(j-1)];
+#define pi 3.14159265
+  FILE *ins;
+  int  DATA_NUM, DATA_NUM_PLUS, *no, *row, *col, *subrow, *subcol,*indx, **E;
+  int i, j, k, m, M, m0;
+  double *datax, **iDataX, **COV, **CORR, *score, *subscore, *psi, **Qmat;
+  double q, sum, un, qscore;
+  static int ratio;
+  // static double ALPHA1=0.05, ALPHA2=0.05;
+  
+  
+  
+  
+  
+  
+  
+  
+  DATA_NUM=*iDataP*(*iDataP-1)/2;
+  DATA_NUM_PLUS=*iDataP*(*iDataP+1)/2;
+  ratio=ceil(DATA_NUM/100000.0);
+  
+  
+  datax=dvector(1,DATA_NUM_PLUS);
+  score=dvector(1,DATA_NUM_PLUS);
+  row=ivector(1,DATA_NUM_PLUS);
+  col=ivector(1,DATA_NUM_PLUS);
+  no=ivector(1,DATA_NUM);
+  indx=ivector(1,DATA_NUM);
+  iDataX=dmatrix(1,*iDataNum,1,*iDataP);
+  COV=dmatrix(1,*iDataP,1,*iDataP);
+  CORR=dmatrix(1,*iDataP,1,*iDataP);
+  subrow=ivector(1,DATA_NUM);
+  subcol=ivector(1,DATA_NUM);
+  subscore=dvector(1,DATA_NUM);
+  Qmat=dmatrix(1,DATA_NUM,1,4);
+  psi=dvector(1,DATA_NUM);
+  E=imatrix(1,*iDataP,1,*iDataP);
+  
+  
+  
+  for(i=1; i<=*iDataNum; i++){
+    for(j=1; j<=*iDataP; j++)
+      iDataX[i][j]=DataX[(i-1)*(*iDataP)+(j-1)];
+  }
+  
+  
+  
+  
+  
+  
+  
+  /*** centralization ****/
+  for(j=1; j<=*iDataP; j++){
+    for(sum=0.0,i=1; i<=*iDataNum; i++) sum+=iDataX[i][j];
+    un=sum/(*iDataNum);
+    for(i=1; i<=*iDataNum; i++) iDataX[i][j]-=un;
+  }
+  
+  /*** calculate covariance matrix ***/
+  m=0;
+  for(i=1; i<=*iDataP; i++){
+    for(j=i; j<=*iDataP; j++){
+      COV[i][j]=0.0;
+      for(k=1; k<=*iDataNum; k++) COV[i][j]+=iDataX[k][i]*iDataX[k][j];
+      COV[i][j]/=*iDataNum;
+      if(i!=j) COV[j][i]=COV[i][j];
+      
+      m++;
+      row[m]=i; col[m]=j; datax[m]=COV[i][j];
     }
-    
-    
-    
-    
-    
-    
-    
-    /*** centralization ****/
-    for(j=1; j<=*iDataP; j++){
-        for(sum=0.0,i=1; i<=*iDataNum; i++) sum+=iDataX[i][j];
-        un=sum/(*iDataNum);
-        for(i=1; i<=*iDataNum; i++) iDataX[i][j]-=un;
+    // if(i%100==0) Rprintf("i=%d\n", i);
+  }
+  if(m!=DATA_NUM_PLUS){ Rprintf("Matrix error I in corz.c\n"); }
+  
+  
+  
+  
+  for(i=1; i<=*iDataP; i++)
+    for(j=i; j<=*iDataP; j++){
+      CORR[i][j]=COV[i][j]/sqrt(COV[i][i]*COV[j][j]);
+      if(i!=j) CORR[j][i]=CORR[i][j];
     }
-    
-    /*** calculate covariance matrix ***/
-    m=0;
-    for(i=1; i<=*iDataP; i++){
-        for(j=i; j<=*iDataP; j++){
-            COV[i][j]=0.0;
-            for(k=1; k<=*iDataNum; k++) COV[i][j]+=iDataX[k][i]*iDataX[k][j];
-            COV[i][j]/=*iDataNum;
-            if(i!=j) COV[j][i]=COV[i][j];
-            
-            m++;
-            row[m]=i; col[m]=j; datax[m]=COV[i][j];
-        }
-       // if(i%100==0) Rprintf("i=%d\n", i);
-    }
-    if(m!=DATA_NUM_PLUS){ Rprintf("Matrix error I in corz.c\n"); }
-    
-    
-    
-    
-    for(i=1; i<=*iDataP; i++)
-        for(j=i; j<=*iDataP; j++){
-            CORR[i][j]=COV[i][j]/sqrt(COV[i][i]*COV[j][j]);
-            if(i!=j) CORR[j][i]=CORR[i][j];
-        }
     
     sum=0.0; k=0;
     for(i=1; i<=*iDataP; i++)
-        for(j=i+1; j<=*iDataP; j++){
-            k++;
-            un=0.5*log((1+CORR[i][j])/(1-CORR[i][j]))*sqrt(*iDataNum-3.0);
-            
-            row[k]=i; col[k]=j; datax[k]=un;
-            no[k]=k;
-        }
-    if(k!=DATA_NUM) Rprintf("Matrix size error\n");
-    
-    for(k=1; k<=DATA_NUM; k++){
+      for(j=i+1; j<=*iDataP; j++){
+        k++;
+        un=0.5*log((1+CORR[i][j])/(1-CORR[i][j]))*sqrt(*iDataNum-3.0);
+        
+        row[k]=i; col[k]=j; datax[k]=un;
+        no[k]=k;
+      }
+      if(k!=DATA_NUM) Rprintf("Matrix size error\n");
+      
+      for(k=1; k<=DATA_NUM; k++){
         
         un=-fabs(datax[k]);
         q=gauss_cdf_ln(un);
         sum=q+log(2.0);
         score[k]=-1.0*inverse_normal_cdf_log(sum);
         
-    }
- 
-    
-    /*** subsampling  **************/
-    if(ratio>1){
+      }
+      
+      
+      /*** subsampling  **************/
+      if(ratio>1){
         indexx(DATA_NUM, score, indx);
         M=DATA_NUM/ratio;
         m0=DATA_NUM-M*ratio;
         
         for(i=1; i<=M; i++){
-            
-            k=0;
-            GetRNGstate();
-            while(k<=0 || k>ratio) k=floor(unif_rand()*ratio)+1;
-            PutRNGstate();
-            j=(i-1)*ratio+k;
-            subrow[i]=row[indx[j]]; subcol[i]=col[indx[j]]; subscore[i]=score[indx[j]];
+          
+          k=0;
+          GetRNGstate();
+          while(k<=0 || k>ratio) k=floor(unif_rand()*ratio)+1;
+          PutRNGstate();
+          j=(i-1)*ratio+k;
+          subrow[i]=row[indx[j]]; subcol[i]=col[indx[j]]; subscore[i]=score[indx[j]];
         }
         if(m0>0){
-            k=0;
-            GetRNGstate();
-            while(k<=0 || k>m0) k=floor(unif_rand()*m0)+1;
-            PutRNGstate();
-            j=M*ratio+k;
-            M++;
-            subrow[M]=row[indx[j]]; subcol[M]=col[indx[j]]; subscore[M]=score[indx[j]];
+          k=0;
+          GetRNGstate();
+          while(k<=0 || k>m0) k=floor(unif_rand()*m0)+1;
+          PutRNGstate();
+          j=M*ratio+k;
+          M++;
+          subrow[M]=row[indx[j]]; subcol[M]=col[indx[j]]; subscore[M]=score[indx[j]];
         }
-    }
-    else{
+      }
+      else{
         M=DATA_NUM;
         for(i=1; i<=M; i++){ subrow[i]=row[i]; subcol[i]=col[i]; subscore[i]=score[i]; }
-    }
-    
-    corsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
-    
-    /*** psi-score calculation *****/
-    
- psi_calculation(*iMaxNei, *iDataNum, *iDataP,M,Qmat,COV,*ALPHA1,row,col,score,psi);
-    
-    /*** psi-score transformation  ***/
-    for(i=1; i<=DATA_NUM; i++){
+      }
+      
+      corsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
+      
+      /*** psi-score calculation *****/
+      
+      psi_calculation(*iMaxNei, *iDataNum, *iDataP,M,Qmat,COV,*ALPHA1,row,col,score,psi,long_score);
+      
+      /*** psi-score transformation  ***/
+      for(i=1; i<=DATA_NUM; i++){
         un=-fabs(psi[i]);
         q=gauss_cdf_ln(un)+log(2.0);
         psi[i]=-1.0*inverse_normal_cdf_log(q);
-    }
-    
-    
-    
-    /*** subsampling  for psi-score **************/
-    if(ratio>1){
+      }
+      
+      
+      
+      /*** subsampling  for psi-score **************/
+      if(ratio>1){
         indexx(DATA_NUM, psi, indx);
         M=DATA_NUM/ratio;
         m0=DATA_NUM-M*ratio;
         
         for(i=1; i<=M; i++){
-            
-            k=0;
-            GetRNGstate();
-            while(k<=0 || k>ratio) k=floor(unif_rand()*ratio)+1;
-            PutRNGstate();
-            j=(i-1)*ratio+k;
-            subrow[i]=row[indx[j]]; subcol[i]=col[indx[j]]; subscore[i]=psi[indx[j]];
+          
+          k=0;
+          GetRNGstate();
+          while(k<=0 || k>ratio) k=floor(unif_rand()*ratio)+1;
+          PutRNGstate();
+          j=(i-1)*ratio+k;
+          subrow[i]=row[indx[j]]; subcol[i]=col[indx[j]]; subscore[i]=psi[indx[j]];
         }
         if(m0>0){
-            k=0;
-            GetRNGstate();
-            while(k<=0 || k>m0) k=floor(unif_rand()*m0)+1;
-            PutRNGstate();
-            j=M*ratio+k;
-            M++;
-            subrow[M]=row[indx[j]]; subcol[M]=col[indx[j]]; subscore[M]=psi[indx[j]];
+          k=0;
+          GetRNGstate();
+          while(k<=0 || k>m0) k=floor(unif_rand()*m0)+1;
+          PutRNGstate();
+          j=M*ratio+k;
+          M++;
+          subrow[M]=row[indx[j]]; subcol[M]=col[indx[j]]; subscore[M]=psi[indx[j]];
         }
-    }
-    else{
+      }
+      else{
         M=DATA_NUM;
         for(i=1; i<=M; i++){ subrow[i]=row[i]; subcol[i]=col[i]; subscore[i]=psi[i]; }
-    }
-    
-    
-    pcorsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
-    
-    k=M; q=Qmat[k][4];
-    while(q<*ALPHA2 && k>1){
+      }
+      
+      
+      pcorsel(M,subrow,subcol,subscore,Qmat,*GRID,*mingrid,*iteration);
+      
+      k=M; q=Qmat[k][4];
+      while(q<*ALPHA2 && k>1){
         k--;
         q=Qmat[k][4];
-    }
-    
-    if(k==M) { Rprintf("The given q-threshold value is too small\n");  goto loop;}
-    else if(k==1){ Rprintf("The given q-threshold value is too big\n"); goto loop; }
-    else {
+      }
+      
+      if(k==M) { Rprintf("The given q-threshold value is too small\n");  goto loop;}
+      else if(k==1){ Rprintf("The given q-threshold value is too big\n"); goto loop; }
+      else {
         qscore=0.5*(fabs(Qmat[k][3])+fabs(Qmat[k+1][3]));
         // qscore=fabs(Qmat[k+1][3]);
-      //  Rprintf("threshold psi-score=%g\n", qscore);
-    }
-    
-    for(i=1; i<=*iDataP; i++)
+        //  Rprintf("threshold psi-score=%g\n", qscore);
+      }
+      
+      for(i=1; i<=*iDataP; i++)
         for(j=1; j<=*iDataP; j++) E[i][j]=0;
-    
-    for(i=1; i<=DATA_NUM; i++)
+      
+      for(i=1; i<=DATA_NUM; i++)
         if(psi[i]>qscore){
-            E[row[i]][col[i]]=1;
-            E[col[i]][row[i]]=1;
+          E[row[i]][col[i]]=1;
+          E[col[i]][row[i]]=1;
         }
-    
-    ins=fopen("sim0.mat","w");
-    for(i=1; i<=*iDataP; i++){
+        /*      
+        ins=fopen("sim0.mat","w");
+        for(i=1; i<=*iDataP; i++){
         for(j=1; j<=*iDataP; j++) fprintf(ins, " %d", E[i][j]);
         fprintf(ins, "\n");
-    }
-    fclose(ins);
-    
-    
-loop: free_dvector(datax,1,DATA_NUM_PLUS);
-    free_dvector(score,1,DATA_NUM_PLUS);
-    free_ivector(row,1,DATA_NUM_PLUS);
-    free_ivector(col,1,DATA_NUM_PLUS);
-    free_ivector(no,1,DATA_NUM);
-    free_dmatrix(iDataX,1,*iDataNum,1,*iDataP);
-    free_dmatrix(COV,1,*iDataP,1,*iDataP);
-    free_dmatrix(CORR,1,*iDataP,1,*iDataP);
-    free_ivector(indx,1,DATA_NUM);
-    free_ivector(subrow,1,DATA_NUM);
-    free_ivector(subcol,1,DATA_NUM);
-    free_dvector(subscore,1,DATA_NUM);
-    free_dmatrix(Qmat,1,DATA_NUM,1,4);
-    free_dvector(psi,1,DATA_NUM);
-    free_imatrix(E,1,*iDataP,1,*iDataP);
-
-    //return 0;
+        }
+        fclose(ins);
+        */
+        
+        for(i=1; i<=*iDataP; i++){
+          for(j=1; j<=*iDataP; j++) long_mat[(i-1)*(*iDataP)+j-1]=E[i][j];
+        }
+        
+        
+        loop: free_dvector(datax,1,DATA_NUM_PLUS);
+        free_dvector(score,1,DATA_NUM_PLUS);
+        free_ivector(row,1,DATA_NUM_PLUS);
+        free_ivector(col,1,DATA_NUM_PLUS);
+        free_ivector(no,1,DATA_NUM);
+        free_dmatrix(iDataX,1,*iDataNum,1,*iDataP);
+        free_dmatrix(COV,1,*iDataP,1,*iDataP);
+        free_dmatrix(CORR,1,*iDataP,1,*iDataP);
+        free_ivector(indx,1,DATA_NUM);
+        free_ivector(subrow,1,DATA_NUM);
+        free_ivector(subcol,1,DATA_NUM);
+        free_dvector(subscore,1,DATA_NUM);
+        free_dmatrix(Qmat,1,DATA_NUM,1,4);
+        free_dvector(psi,1,DATA_NUM);
+        free_imatrix(E,1,*iDataP,1,*iDataP);
+        
+        //return 0;
 }
 
 
@@ -3081,7 +3078,8 @@ void allR(int DataX[],
           int *DataNum,
           int *GeneNum,
           int *total_iteration,
-          double *stepsize)
+          double *stepsize,
+          double *cont_ave)
 
 {
     
@@ -3196,7 +3194,7 @@ void allR(int DataX[],
         
     }
     
-    
+  /*  
     ins=fopen("continuzed.dat","w");
     
     for(i = 1; i <= *DataNum; i++) {
@@ -3207,7 +3205,13 @@ void allR(int DataX[],
     }
     fclose(ins);
     
-    
+   */
+  for(i = 1; i <= *DataNum; i++) {
+    for(j = 1; j <= *GeneNum; j++) {
+      cont_ave[(i-1)*(*DataNum)+(j-1)] = ave[j][i]/count[j];
+    }
+  }
+  
     
  /*   for (i = 1; i <= *GeneNum; i++) {
         Rprintf("acceptance rate=%g\n", 1.0*accept_loc[i]/total_loc[i]);
@@ -3228,7 +3232,7 @@ void allR(int DataX[],
 
 
 
-void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM, int *GRID, int *mingrid, int *iteration)
+void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM, int *GRID, int *mingrid, int *iteration, double *aaa)
 {
 #define pi 3.14159265
   static int  MAX_NUM=200000;
@@ -3535,11 +3539,22 @@ void pcorsel1(int irow[], int icol[], double idatax[], int *DATA_NUM, int *GRID,
     Q[i]=min;
   }
   
+  /*
   ins=fopen("aaa.fdr", "w");
   for(i=1; i<=*DATA_NUM; i++)
     fprintf(ins, " %5d %5d %g %g %g\n", row[indx[i]],col[indx[i]],datax[indx[i]],FDR[i],Q[i]);
   fprintf(ins, "\n");
   fclose(ins);
+  */
+  
+  for(i=1; i<=*DATA_NUM; i++){
+    aaa[(i-1)*5]=row[indx[i]];
+    aaa[(i-1)*5+1]=col[indx[i]];
+    aaa[(i-1)*5+2]=datax[indx[i]];
+    aaa[(i-1)*5+3]=FDR[i];
+    aaa[(i-1)*5+4]=Q[i];
+  }
+  
   
   
   

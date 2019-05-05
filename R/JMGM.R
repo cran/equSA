@@ -1,63 +1,50 @@
-JGGM <- function(data,ALPHA1=0.05,ALPHA2=0.01,structure = "temporal",parallel=FALSE,nCPUs){
-## run equSA_sub for each dataset, record the psi score ###
-  U <- NULL;
-  M=length(data);
-if(parallel){
-  cores <- nCPUs
-  cl<-makeCluster(cores)
-  registerDoParallel(cl,cores=cores)
-  U <- foreach(i=1:M,.combine="cbind")  %dopar%
-  {
-    data_i <- data[[i]]
-    U1 <- psical(data_i,ALPHA1=ALPHA1)
-    if(i==1){
-      U1
-    }else{
-      U1[,3]
-    }
-  }
-  stopImplicitCluster()
-  stopCluster(cl)
-}else{
-  for(i in 1:M)
-  {
-    data_i <- data[[i]]
-    U1 <- psical(data_i,ALPHA1=ALPHA1)
-    U<-cbind(U,U1[,3])
-  }
-  index <- U1[,1:2]
-  U<-cbind(index,U)
-}
-  score_raw <- U
 
+JMGM <- function(data,ALPHA1=0.05,ALPHA2=0.01,restrict=FALSE,parallel=FALSE,nCPUs){
+  U2 <- NULL;
+  M=length(data);
+  if(parallel){
+    cores <- nCPUs
+    cl<-makeCluster(cores)
+    registerDoParallel(cl,cores=cores)
+    U2 <- foreach(i=1:M,.combine="cbind")  %dopar%
+    {
+      data_i <- data[[i]]
+      score <- plearn.struct(data_i,alpha1=ALPHA1,alpha2=ALPHA2,restrict = restrict, score.only=TRUE)
+      if(i==1){
+        score
+      }else{
+        score[,3]
+      }
+    }
+    stopImplicitCluster()
+    stopCluster(cl)
+  }else{
+   for(i in 1:M){
+      data_i <- data[[i]]
+      score <- plearn.struct(data_i,alpha1=ALPHA1,alpha2=ALPHA2,restrict = restrict, score.only=TRUE)
+      if(i==1){
+        U2 <- cbind(U2,score)
+      }else{
+        U2 <- cbind(U2,score[,3])
+      }
+   }
+  }
+  score_raw <- U2
 
 ### pre_function ####
-Ind <- function(x){
-  k1=k2=0;
-  for(i in 1:(length(x)-1))
-  {
-    if(x[i]!=x[i+1]){
-      k1=k1+1
-    }else{
-      k2=k2+1 
-    }
-  }
-  return(c(k1,k2))
-}
-  
 Ind2 <- function(x){
-    e_mod <- ifelse(mean(x)>=0.5,1,0)
-    cc <- abs(x-e_mod)
-    k1 <- sum(cc)
-    k2 <- M-k1
-    return(c(k1,k2))
+  e_mod <- ifelse(mean(x)>=0.5,1,0)
+  cc <- abs(x-e_mod)
+  k1 <- sum(cc)
+  k2 <- M-k1
+  return(c(k1,k2))
 }
 
 #### setting ####
+N <- dim(score_raw)[1]
 p <- dim(data[[1]])[2]
-N <- p*(p-1)/2
 
-#### hyperparameter ###
+#### hyperparameter r=2 ###
 
 a1 <- 1
 b1 <- 10
@@ -74,9 +61,7 @@ permu <- function(n){
   return(S)
 }
 S <- permu(M)
-
-
-U_initial <- U
+U <- score_raw
 psi_final_hat <- NULL;
 num <- dim(S)[1]
 
@@ -89,15 +74,8 @@ for(kk in 1:N)
   {
     n0 <- length(which(S[ite,]==0))
     n1 <- length(which(S[ite,]==1))
-    if(structure == "temporal"){
-      k1 <- Ind(S[ite,])[1]  ## change
-      k2 <- M-1-k1  ## not change
-    }else if(structure == "spatial"){
-      k1 <- Ind2(S[ite,])[1]  ## change
-      k2 <- M-k1  ## not change
-    }else{
-      stop("please use temporal or spatial structure")
-    }
+    k1 <- Ind2(S[ite,])[1]  ## change
+    k2 <- M-k1  ## not change
     psi0 <- psi[S[ite,]==0]
     psi1 <- psi[S[ite,]==1]
     ## combined psi score ##
@@ -123,23 +101,15 @@ for(kk in 1:N)
   psi_final <- t(t(psi_com_hat)%*%Prob)
   psi_final_hat <- rbind(psi_final_hat,psi_final)
 }
-score_com <- cbind(U_initial[,c(1,2)],psi_final_hat)
+score_com <- cbind(score_raw[,c(1,2)],psi_final_hat)
+
 
 ### combine all psi score ###
-psi_tran <- function(z){
-  q<-pnorm(-abs(z), log.p=TRUE)
-  q<-q+log(2.0)
-  s<-qnorm(q,log.p=TRUE)
-  s<-(-1)*s
-  return(s)
-}
-tran_psi <- sapply(as.data.frame(score_com[,-(1:2)]),psi_tran)
-tran_psi <- cbind(score_com[,1:2],tran_psi)
-
-
-psi_all <- as.vector(as.matrix(tran_psi[,-c(1,2)]))
+psi_all <- as.vector(as.matrix(score_com[,-c(1,2)]))
 num <- 1:length(psi_all)
 U <- cbind(num,num,psi_all)
+
+# subsample
 U<-U[order(U[,3]), 1:3]
 N<-length(U[,1])
 ratio<-ceiling(N/100000)
@@ -152,16 +122,17 @@ if(m0>0){
   s<-c(s,s0)
 }
 Us<-U[s,]
+
 y <- round(Us,6)
-qqqscore <- pcorselR(y,ALPHA2=ALPHA2)
+qscore2 <- pcorselR(y,ALPHA2=ALPHA2)
 
 
-#### cut-off psi score qqqscore ###
+#### cut-off psi score qscore2 ###
 A <- array(0,dim = c(M,p,p))
 for(k in 1:M)
 {
-  psik <- tran_psi[,c(1,2,k+2)]
-  psik <- psik[psik[,3]>=qqqscore,]
+  psik <- score_com[,c(1,2,k+2)]
+  psik <-psik[psik[,3]>=qscore2,]
   for(i in 1:nrow(psik)){
     k1<-psik[i,1]
     k2<-psik[i,2]
@@ -175,4 +146,5 @@ result$Array = A
 result$score.sep = score_raw
 result$score.joint = score_com
 return(result)
+
 }

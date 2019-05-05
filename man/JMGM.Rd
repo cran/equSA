@@ -1,10 +1,10 @@
-\name{JGGM}
-\alias{JGGM}
-\title{ Joint estimation of Multiple Gaussian Graphical Models}
-\description{Infer networks from Multiple Gaussian data from differnt groups using our proposed fast Bayesian integrative method.}
+\name{JMGM}
+\alias{JMGM}
+\title{ Joint Mixed Graphical Models}
+\description{Infer network structures from multiple datasets with mixed types of variables and edge restrictions option available.}
 
 \usage{
-JGGM(data,ALPHA1=0.05,ALPHA2=0.01,structure = "temporal",parallel=FALSE,nCPUs)
+JMGM(data,ALPHA1=0.05,ALPHA2=0.01,restrict=FALSE,parallel=FALSE,nCPUs)
 }
 
 \arguments{
@@ -14,12 +14,12 @@ JGGM(data,ALPHA1=0.05,ALPHA2=0.01,structure = "temporal",parallel=FALSE,nCPUs)
  the conditioning set. Including a few false variables in the conditioning set will not hurt much the 
  accuracy of the \eqn{\psi}-partial correlation coefficient.}
   \item{ ALPHA2  }{ The significance level of \eqn{\psi} screening.}
-    \item{ structure  }{ The depedent structure of multiple networks, either "temporal" or "spatial". The default is "temporal".}
+  \item{restrict}{Should edge restriction applied? (logical). If \code{TRUE}, we assume that there should be no edge among binary variables. The default is \code{FALSE}.}
   \item{parallel}{Should parallelization be used? (logical), default is \code{FALSE}.}
   \item{nCPUs}{Number of cores used for parallelization. Recommend to be equal to the number of datasets.}
 }
 \details{
-This is the function that can jointly estimate multiple GGMs which can integrate the information throughtout all datasets. The method mainly consists three steps: (i) separate estimation of \eqn{\psi}-scores for each dataset, (ii) identifies possible changes of each edge across different groups and integrate the \eqn{\psi} scores across different groups simultaneously and (iii) apply multiple hypothesis test to identify edges using integrated \eqn{\psi} scores. See Jia, B., et al (2018).
+This is the function that can jointly estimate multiple graphical models with mixed types of data and also consider the edge restriction scenarios. The method has three novelties: First, the proposed method resolves the conditional independence information using a \eqn{p}-learning algorithm and therefore can be applied to the mixed types of random variables. Second, the proposed method can construct networks with restricted edges determined by some preliminary knowledges. Third, the proposed method involves a Fast Bayesian joint estimation method which works on edge-wise scores and can achieve both fast and accurate integration performance for constructing multiple networks. See Jia and Liang (2018).
 }
 \value{
 A list of three elements:
@@ -35,22 +35,20 @@ A list of three elements:
 
 \dontshow{
 library(equSA)
-data1 <- GauSim(100,15)$data
-data2 <- GauSim(100,15)$data
-data_all <- vector("list",2)
+data1 <- DAGsim(n=200, p=20, p.binary=0, type="AR(2)")$data
+data_all <- vector("list",1)
 data_all[[1]] <- data1
-data_all[[2]] <- data2
-JGGM(data_all,ALPHA1=0.5,ALPHA2=0.5)
+JMGM(data_all,ALPHA1=0.5,ALPHA2=0.9)
 
 }
 \donttest{
 library(equSA)
-data(SR0)
-data(TR0)
+data1 <- DAGsim(n=200, p=100, type="AR(2)")$data
+data2 <- DAGsim(n=200, p=100, type="AR(2)")$data
 data_all <- vector("list",2)
-data_all[[1]] <- SR0
-data_all[[2]] <- TR0
-JGGM(data_all,ALPHA1=0.05,ALPHA2=0.05)
+data_all[[1]] <- data1
+data_all[[2]] <- data2
+JMGM(data_all,ALPHA1=0.1,ALPHA2=0.05,parallel=TRUE,nCPUs=2)
 
 }
 
@@ -59,8 +57,8 @@ JGGM(data_all,ALPHA1=0.05,ALPHA2=0.05)
 }
 
 \references{
-Jia, B., and Liang, F. (2018). A Fast Hybrid Bayesian Integrative Learning of Multiple Gene Regulatory Networks for Type 1 Diabetes. Submitted to Biostatistics.
+Jia, B., and Liang, F. (2018) Joint Estimation of Restricted Mixed Graphical Models. manuscript.
 
 }
 
-\keyword{JGGM}
+\keyword{JMGM}
